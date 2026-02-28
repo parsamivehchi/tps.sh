@@ -211,4 +211,4 @@ Scores where Claude judges its own outputs are flagged for potential bias.
 
 ## Related
 
-**[LLM Setup Kit for Mac](https://github.com/parsamivehchi/llm-setup-kit-for-mac)** — The dev environment this was built on. Full macOS migration kit with Brewfile, Ollama, Ghostty, Starship, and 17-phase automated setup.
+**[LLM-Setup-Kit-for-Mac](https://github.com/parsamivehchi/LLM-Setup-Kit-for-Mac)** — The dev environment this was built on. Full macOS migration kit with Brewfile, Ollama, Ghostty, Starship, and 17-phase automated setup.
