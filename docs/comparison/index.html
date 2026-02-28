@@ -205,6 +205,268 @@ footer a { color: var(--accent); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
 
 [data-theme="light"] section[style] { background: var(--bg-surface) !important; }
+
+/* =========================================================
+   MOBILE RESPONSIVE — Consolidated Breakpoints
+   ========================================================= */
+
+/* -- Mobile nav hamburger toggle -- */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+.nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+
+/* -- Heatmap scroll wrapper -- */
+.heatmap-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* -- Table scroll wrapper -- */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== Tablet breakpoint: 768px ===== */
+@media (max-width: 768px) {
+
+  /* Nav */
+  nav { padding: 10px 0; }
+  .nav-toggle { display: flex; }
+  nav .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    gap: 0;
+  }
+  nav .nav-links.open { display: flex; }
+  nav .nav-links a {
+    padding: 10px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav .nav-links a:last-child { border-bottom: none; }
+  nav .nav-links a.next-link {
+    margin-top: 8px;
+    text-align: center;
+    padding: 8px 0;
+  }
+  /* Theme buttons row inside mobile menu */
+  nav .nav-links > div[style] {
+    margin-left: 0 !important;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  /* Phase indicator */
+  .phase-indicator { gap: 6px; padding: 10px 0; flex-wrap: wrap; justify-content: center; }
+  .phase-pill { font-size: 10px; padding: 3px 10px; }
+
+  /* Hero */
+  .hero { padding: 64px 0 48px; }
+  .hero h1 { font-size: 32px; letter-spacing: -1px; }
+  .hero .subtitle { font-size: 16px; margin-bottom: 28px; }
+  .hero .meta-row { gap: 14px 20px; }
+  .hero .meta-item { font-size: 11px; }
+  .hero .badge { font-size: 11px; padding: 5px 12px; margin-bottom: 24px; }
+
+  /* Container */
+  .container { padding: 0 16px; }
+
+  /* Section spacing */
+  section { padding: 48px 0; }
+  .section-title { font-size: 24px; letter-spacing: -0.5px; }
+  .section-desc { font-size: 15px; margin-bottom: 32px; }
+  .section-label { font-size: 12px; letter-spacing: 2px; }
+
+  /* Charts */
+  .chart-card { padding: 20px; }
+  .chart-wrap { height: 260px; }
+  .chart-wrap.tall { height: 320px; }
+  .chart-card h3 { font-size: 15px; }
+  .chart-card .chart-desc { font-size: 13px; margin-bottom: 14px; }
+
+  /* Speed bars — stacked layout */
+  .speed-bar-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 4px 10px;
+  }
+  .speed-bar-name {
+    grid-column: 1 / -1;
+    font-size: 14px;
+  }
+  .speed-bar-track {
+    grid-column: 1;
+    grid-row: 2;
+    height: 24px;
+  }
+  .speed-bar-value {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 15px;
+    min-width: 60px;
+  }
+
+  /* Heatmap — horizontal scroll */
+  .heatmap-grid { min-width: 600px; }
+  .heatmap-header { font-size: 9px; padding: 6px 4px; }
+  .heatmap-cell { padding: 8px 4px; font-size: 11px; }
+  .heatmap-cat { font-size: 11px; padding: 8px 6px; }
+
+  /* Table */
+  .comp-table { font-size: 12px; }
+  .comp-table thead th { padding: 8px 8px; font-size: 9px; }
+  .comp-table tbody td { padding: 8px 8px; font-size: 13px; }
+
+  /* Insight cards */
+  .insight-card { padding: 20px; }
+  .insight-card .emoji { font-size: 24px; margin-bottom: 8px; }
+  .insight-card h4 { font-size: 15px; }
+  .insight-card p { font-size: 14px; }
+
+  /* Bridge section */
+  .bridge { padding: 48px 0; }
+  .bridge-card { padding: 32px 20px; }
+  .bridge-title { font-size: 22px; margin-bottom: 20px; }
+  .bridge-stats { gap: 24px; margin-bottom: 20px; }
+  .bridge-stat .stat-num { font-size: 32px; }
+  .bridge-stat .stat-label { font-size: 11px; }
+  .bridge-copy { font-size: 14px; margin-bottom: 24px; }
+  .bridge-cta { font-size: 14px; padding: 10px 24px; }
+
+  /* Model cards */
+  .model-card { padding: 18px; }
+  .model-card .name { font-size: 15px; }
+  .model-card .stat-value { font-size: 16px; }
+
+  /* Footer */
+  footer { padding: 28px 0; font-size: 12px; }
+  footer p[style*="font-size:11px"] { font-size: 10px !important; }
+  footer p[style*="font-size:13px"] { font-size: 11px !important; }
+
+  /* Glow orbs — reduce for performance */
+  .glow-orb { opacity: calc(var(--glow-opacity) * 0.5); }
+  .glow-orb.emerald { width: 250px; height: 250px; }
+  .glow-orb.violet { width: 200px; height: 200px; }
+  .glow-orb.cyan { width: 180px; height: 180px; }
+}
+
+/* ===== Small phone breakpoint: 480px ===== */
+@media (max-width: 480px) {
+
+  /* Hero */
+  .hero { padding: 48px 0 36px; }
+  .hero h1 { font-size: 26px; letter-spacing: -0.5px; line-height: 1.1; }
+  .hero .subtitle { font-size: 15px; margin-bottom: 24px; }
+  .hero .meta-row { gap: 10px 16px; justify-content: center; }
+  .hero .meta-item { font-size: 10px; }
+  .hero .badge { font-size: 10px; padding: 4px 10px; margin-bottom: 20px; }
+
+  /* Container */
+  .container { padding: 0 12px; }
+
+  /* Section */
+  section { padding: 36px 0; }
+  .section-title { font-size: 21px; }
+  .section-desc { font-size: 14px; margin-bottom: 24px; }
+
+  /* Model cards — tighter */
+  .model-card { padding: 16px; border-radius: 12px; }
+  .model-card .name { font-size: 14px; }
+  .model-card .arch { font-size: 11px; }
+  .model-card .stat-value { font-size: 15px; }
+  .model-card .stat-label { font-size: 11px; }
+  .model-card .crown { font-size: 16px; top: 8px; right: 8px; }
+  .model-grid, .model-grid.three { gap: 10px; }
+
+  /* Charts */
+  .chart-card { padding: 16px; border-radius: 12px; }
+  .chart-wrap { height: 220px; }
+  .chart-wrap.tall { height: 280px; }
+  .chart-card h3 { font-size: 14px; }
+  .chart-card .chart-desc { font-size: 12px; margin-bottom: 12px; }
+  .chart-grid { gap: 12px; }
+
+  /* Speed bars */
+  .speed-bars { gap: 10px; }
+  .speed-bar-name { font-size: 13px; }
+  .speed-bar-track { height: 20px; }
+  .speed-bar-value { font-size: 13px; min-width: 50px; }
+
+  /* Heatmap */
+  .heatmap-grid { min-width: 540px; }
+  .heatmap-header { font-size: 8px; padding: 5px 3px; }
+  .heatmap-cell { padding: 6px 3px; font-size: 10px; }
+  .heatmap-cat { font-size: 10px; padding: 6px 4px; }
+
+  /* Table */
+  .comp-table thead th { padding: 6px 6px; font-size: 8px; letter-spacing: 0.5px; }
+  .comp-table tbody td { padding: 6px 6px; font-size: 12px; }
+
+  /* Insight cards */
+  .insight-cards { gap: 10px; }
+  .insight-card { padding: 16px; border-radius: 12px; }
+  .insight-card .emoji { font-size: 22px; margin-bottom: 6px; }
+  .insight-card h4 { font-size: 14px; }
+  .insight-card p { font-size: 13px; line-height: 1.5; }
+
+  /* Bridge */
+  .bridge { padding: 36px 0; }
+  .bridge-card { padding: 24px 16px; border-radius: 12px; }
+  .bridge-title { font-size: 19px; margin-bottom: 16px; }
+  .bridge-stats { gap: 16px; margin-bottom: 16px; }
+  .bridge-stat .stat-num { font-size: 26px; }
+  .bridge-stat .stat-label { font-size: 10px; }
+  .bridge-copy { font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+  .bridge-cta { font-size: 13px; padding: 10px 20px; border-radius: 8px; }
+
+  /* Phase pills */
+  .phase-indicator { padding: 8px 12px; gap: 4px; }
+  .phase-pill { font-size: 9px; padding: 3px 8px; }
+
+  /* Footer */
+  footer { padding: 24px 0; font-size: 11px; }
+
+  /* Glow orbs — minimal on small screens */
+  .glow-orb.emerald { width: 180px; height: 180px; }
+  .glow-orb.violet { width: 150px; height: 150px; }
+  .glow-orb.cyan { display: none; }
+
+  /* Nav mobile tweaks */
+  nav .nav-links { padding: 12px 16px; }
+  nav .nav-links a { font-size: 13px; padding: 9px 0; }
+
+  /* Group labels */
+  .group-label { font-size: 12px; }
+}
 </style>
 <script>
 (function(){
@@ -223,6 +485,9 @@ footer a:hover { text-decoration: underline; }
 <nav>
   <div class="container">
     <div class="logo">TPS<span>.</span>SH</div>
+    <button class="nav-toggle" aria-label="Toggle navigation" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open');">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-links">
       <a href="#overview">Overview</a>
       <a href="#speed">Speed</a>
@@ -378,7 +643,7 @@ footer a:hover { text-decoration: underline; }
     <div class="chart-card full reveal" style="margin-bottom: 24px; overflow-x: auto;">
       <h3>Quality Heatmap &mdash; Score by Category</h3>
       <div class="chart-desc">Color intensity = quality score. Green = high, red = low.</div>
-      <div class="heatmap-grid" id="heatmap"></div>
+      <div class="heatmap-scroll"><div class="heatmap-grid" id="heatmap"></div></div>
     </div>
     <div class="chart-card full reveal">
       <h3>Category Quality Radar</h3>
@@ -393,13 +658,15 @@ footer a:hover { text-decoration: underline; }
     <div class="section-label reveal">05 / Full Data</div>
     <h2 class="section-title reveal">Complete Comparison</h2>
     <p class="section-desc reveal">Every metric, every model.</p>
-    <div class="chart-card full reveal" style="overflow-x: auto;">
-      <table class="comp-table">
-        <thead><tr>
-          <th>Model</th><th>Type</th><th>TPS</th><th>TTFT</th><th>Avg Time</th><th>Quality</th><th>Tokens</th><th>Cost</th>
-        </tr></thead>
-        <tbody id="compTableBody"></tbody>
-      </table>
+    <div class="chart-card full reveal">
+      <div class="table-scroll">
+        <table class="comp-table">
+          <thead><tr>
+            <th>Model</th><th>Type</th><th>TPS</th><th>TTFT</th><th>Avg Time</th><th>Quality</th><th>Tokens</th><th>Cost</th>
+          </tr></thead>
+          <tbody id="compTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </section>
@@ -640,6 +907,18 @@ function updateThemeButtons(active) {
   var t = localStorage.getItem('llm-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   updateThemeButtons(t);
 })();
+
+// Mobile nav: close menu when a link is clicked
+document.querySelectorAll('nav .nav-links a').forEach(function(link) {
+  link.addEventListener('click', function() {
+    var toggle = document.querySelector('.nav-toggle');
+    var links = document.querySelector('nav .nav-links');
+    if (toggle && links) {
+      toggle.classList.remove('active');
+      links.classList.remove('open');
+    }
+  });
+});
 </script>
 </body>
 </html>
