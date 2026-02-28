@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>tps.sh — Local vs Cloud Showdown</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚡</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -467,6 +468,408 @@ footer a:hover { text-decoration: underline; }
   /* Group labels */
   .group-label { font-size: 12px; }
 }
+
+/* =========================================================
+   Reading Progress Bar
+   ========================================================= */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  z-index: 10000;
+  background: linear-gradient(90deg, var(--emerald, #10b981), var(--accent, #3b82f6));
+  width: 0%;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+/* =========================================================
+   Scroll-to-Top Button
+   ========================================================= */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 200;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s, background 0.2s, color 0.2s;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.scroll-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.scroll-top-btn:hover {
+  background: var(--accent);
+  color: var(--bg-deep);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   Keyboard Shortcuts Help Overlay
+   ========================================================= */
+.shortcuts-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+.shortcuts-overlay.open {
+  display: flex;
+}
+.shortcuts-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+}
+.shortcuts-panel {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+}
+.shortcuts-panel h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+.shortcuts-panel .shortcut-group-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.shortcuts-panel .shortcut-group-title:first-of-type {
+  margin-top: 0;
+}
+.shortcuts-panel .shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+.shortcuts-panel .shortcut-row span {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.shortcuts-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+.shortcuts-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+
+kbd {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* =========================================================
+   Command Palette
+   ========================================================= */
+.cmd-palette-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 18vh;
+}
+.cmd-palette-overlay.open {
+  display: flex;
+}
+.cmd-palette-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+}
+.cmd-palette {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  max-width: 560px;
+  width: 92%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.cmd-palette-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  color: var(--text-primary);
+  outline: none;
+}
+.cmd-palette-input::placeholder {
+  color: var(--text-muted);
+}
+.cmd-palette-list {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 8px;
+}
+.cmd-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cmd-palette-item:hover,
+.cmd-palette-item.active {
+  background: var(--bg-surface);
+}
+.cmd-palette-item .cmd-cat {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  min-width: 70px;
+}
+.cmd-palette-item .cmd-name {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.cmd-palette-empty {
+  padding: 24px 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* =========================================================
+   Section Anchor Links
+   ========================================================= */
+.section-anchor {
+  opacity: 0;
+  margin-left: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 400;
+  transition: opacity 0.2s, color 0.2s;
+  cursor: pointer;
+  font-size: 0.8em;
+  -webkit-text-fill-color: initial;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+}
+.section-title:hover .section-anchor,
+h3:hover .section-anchor {
+  opacity: 1;
+}
+.section-anchor:hover {
+  color: var(--accent);
+}
+.anchor-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 9999;
+  pointer-events: none;
+}
+.anchor-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* =========================================================
+   GitHub Nav Button
+   ========================================================= */
+.github-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary);
+  transition: color 0.2s, transform 0.2s;
+}
+.github-nav-btn:hover {
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+.github-nav-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* =========================================================
+   Footer Shortcut Hints
+   ========================================================= */
+.footer-shortcuts {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.footer-shortcuts kbd {
+  font-size: 11px;
+  padding: 1px 6px;
+}
+
+/* =========================================================
+   Print Styles
+   ========================================================= */
+@media print {
+  nav, .reading-progress, .scroll-top-btn, .shortcuts-overlay,
+  .cmd-palette-overlay, .phase-indicator, .bridge, .anchor-toast,
+  .glow-orb, body::before, .nav-toggle, .footer-shortcuts {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  * {
+    color: #000 !important;
+    border-color: #ccc !important;
+    box-shadow: none !important;
+  }
+  .model-card, .chart-card, .insight-card {
+    page-break-inside: avoid;
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+  }
+  section {
+    background: transparent !important;
+    page-break-inside: avoid;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 10px;
+    color: #666 !important;
+  }
+  .hero h1 {
+    -webkit-text-fill-color: #000 !important;
+    background: none !important;
+  }
+}
+
+/* =========================================================
+   Welcome Toast (First Visit)
+   ========================================================= */
+.welcome-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  z-index: 9998;
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  pointer-events: none;
+}
+.welcome-toast.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.welcome-toast.hiding {
+  transform: translateX(-50%) translateY(100px);
+  opacity: 0;
+}
+.welcome-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-card, rgba(30,30,30,0.95));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #aaa);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.welcome-content kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--accent, #6366f1);
+}
+.welcome-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #aaa);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.welcome-dismiss:hover {
+  opacity: 1;
+}
 </style>
 <script>
 (function(){
@@ -477,6 +880,7 @@ footer a:hover { text-decoration: underline; }
 </script>
 </head>
 <body>
+<div class="reading-progress" id="readingProgress"></div>
 
 <div class="glow-orb emerald"></div>
 <div class="glow-orb violet"></div>
@@ -489,6 +893,7 @@ footer a:hover { text-decoration: underline; }
       <span></span><span></span><span></span>
     </button>
     <div class="nav-links">
+      <a href="../index.html" style="font-weight:600;">&larr; tps.sh</a>
       <a href="#overview">Overview</a>
       <a href="#speed">Speed</a>
       <a href="#quality">Quality</a>
@@ -501,6 +906,7 @@ footer a:hover { text-decoration: underline; }
         <button onclick="setTheme('neon')" title="Neon" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="neon">N</button>
         <button onclick="setTheme('solarized')" title="Solarized" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="solarized">S</button>
       </div>
+      <a href="https://github.com/parsamivehchi/tps.sh" target="_blank" rel="noopener" class="github-nav-btn" title="GitHub Repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
       <a href="hardware.html" class="next-link">Hardware Guide &rarr;</a>
     </div>
   </div>
@@ -509,6 +915,7 @@ footer a:hover { text-decoration: underline; }
 <div class="phase-indicator">
   <span class="phase-pill active">Phase 1: Benchmarks</span>
   <a href="hardware.html" class="phase-pill inactive">Phase 2: Hardware Guide</a>
+  <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank" class="phase-pill inactive">Phase 3: Setup Kit ↗</a>
 </div>
 
 <section class="hero">
@@ -743,8 +1150,60 @@ footer a:hover { text-decoration: underline; }
     <p>Phase 1: Benchmark Results &bull; 5 Models &bull; 105 Tests &bull; Quality Scored by Claude Sonnet 4.6 &bull; February 2026</p>
     <p style="margin-top:6px;font-size:11px;">63/105 scores flagged for Claude-judging-Claude bias. Local models scored independently. 2 slow models (deepseek-r1, glm-4.7-flash) excluded &mdash; full 7-model data available.</p>
     <p style="margin-top:10px;font-size:13px;"><a href="hardware.html">Phase 2: Hardware Guide &rarr;</a> What's limiting local TPS and how to fix it</p>
+    <p style="margin-top:8px;font-size:13px;"><a href="https://parsamivehchi.github.io/mac-setup/" target="_blank">Phase 3: Mac Setup Kit &rarr;</a></p>
+    <p style="margin-top:8px;font-size:13px;"><a href="https://github.com/parsamivehchi/tps.sh" target="_blank" rel="noopener">View on GitHub</a></p>
+    <p class="footer-shortcuts">Press <kbd>?</kbd> for keyboard shortcuts &middot; <kbd>&#8984;K</kbd> for command palette</p>
   </div>
 </footer>
+
+<!-- Scroll to Top Button -->
+<button class="scroll-top-btn" id="scrollTopBtn" title="Scroll to top (Home)" aria-label="Scroll to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<!-- Keyboard Shortcuts Help Overlay -->
+<div class="shortcuts-overlay" id="shortcutsOverlay">
+  <div class="shortcuts-backdrop" id="shortcutsBackdrop"></div>
+  <div class="shortcuts-panel">
+    <button class="shortcuts-close" id="shortcutsClose" aria-label="Close">&times;</button>
+    <h3>Keyboard Shortcuts</h3>
+    <div class="shortcut-group-title">General</div>
+    <div class="shortcut-row"><span>Show this help</span><kbd>?</kbd></div>
+    <div class="shortcut-row"><span>Cycle theme</span><kbd>T</kbd></div>
+    <div class="shortcut-row"><span>Command palette</span><kbd>&#8984;K</kbd></div>
+    <div class="shortcut-row"><span>Close overlay</span><kbd>Esc</kbd></div>
+    <div class="shortcut-group-title">Navigation</div>
+    <div class="shortcut-row"><span>Scroll to top</span><kbd>Home</kbd> <kbd>0</kbd></div>
+    <div class="shortcut-row"><span>Jump to section 1-6</span><kbd>1</kbd> &ndash; <kbd>6</kbd></div>
+    <div class="shortcut-group-title">Pages</div>
+    <div class="shortcut-row"><span>Landing page</span><kbd>L</kbd></div>
+    <div class="shortcut-row"><span>Hardware guide</span><kbd>N</kbd></div>
+    <div class="shortcut-row"><span>Setup Kit</span><kbd>M</kbd></div>
+    <div class="shortcut-row"><span>Open GitHub</span><kbd>G</kbd></div>
+  </div>
+</div>
+
+<!-- Command Palette Overlay -->
+<div class="cmd-palette-overlay" id="cmdPaletteOverlay">
+  <div class="cmd-palette-backdrop" id="cmdPaletteBackdrop"></div>
+  <div class="cmd-palette">
+    <input class="cmd-palette-input" id="cmdPaletteInput" type="text" placeholder="Type a command..." autocomplete="off" />
+    <div class="cmd-palette-list" id="cmdPaletteList"></div>
+  </div>
+</div>
+
+<!-- Anchor Link Toast -->
+<div class="anchor-toast" id="anchorToast">Link copied!</div>
+
+<!-- Welcome Toast (First Visit) -->
+<div class="welcome-toast" id="welcomeToast">
+  <div class="welcome-content">
+    <span class="welcome-text">
+      <kbd>?</kbd> shortcuts &nbsp;&middot;&nbsp; <kbd>&#8984;K</kbd> command palette &nbsp;&middot;&nbsp; <kbd>T</kbd> change theme
+    </span>
+    <button class="welcome-dismiss" id="welcomeDismiss" aria-label="Dismiss">&times;</button>
+  </div>
+</div>
 
 <script>
 const M = [
@@ -919,6 +1378,353 @@ document.querySelectorAll('nav .nav-links a').forEach(function(link) {
     }
   });
 });
+
+// =========================================================
+// 1.1 Reading Progress Bar
+// =========================================================
+(function() {
+  var progressBar = document.getElementById('readingProgress');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (docHeight > 0) {
+      progressBar.style.width = (scrollTop / docHeight * 100) + '%';
+    }
+  }, { passive: true });
+})();
+
+// =========================================================
+// 1.2 Scroll-to-Top Button
+// =========================================================
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }, { passive: true });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+
+// =========================================================
+// Section Anchor Links (5.1)
+// =========================================================
+(function() {
+  var sectionIds = ['overview', 'speed', 'quality', 'categories', 'deep-dive', 'insights'];
+  // Add anchors to section titles (h2.section-title)
+  document.querySelectorAll('.section-title').forEach(function(h2) {
+    var section = h2.closest('section');
+    if (section && section.id) {
+      var anchor = document.createElement('a');
+      anchor.className = 'section-anchor';
+      anchor.href = '#' + section.id;
+      anchor.textContent = '#';
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        history.replaceState(null, '', '#' + section.id);
+        var url = window.location.href;
+        navigator.clipboard.writeText(url).then(function() {
+          showAnchorToast();
+        });
+      });
+      h2.appendChild(anchor);
+    }
+  });
+  // Add anchors to chart card h3 titles
+  document.querySelectorAll('.chart-card h3').forEach(function(h3) {
+    var card = h3.closest('.chart-card');
+    if (!card) return;
+    var section = card.closest('section');
+    if (section && section.id) {
+      var anchor = document.createElement('a');
+      anchor.className = 'section-anchor';
+      anchor.href = '#' + section.id;
+      anchor.textContent = '#';
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        history.replaceState(null, '', '#' + section.id);
+        navigator.clipboard.writeText(window.location.href).then(function() {
+          showAnchorToast();
+        });
+      });
+      h3.appendChild(anchor);
+    }
+  });
+  function showAnchorToast() {
+    var toast = document.getElementById('anchorToast');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 1800);
+  }
+})();
+
+// =========================================================
+// 1.3 Keyboard Shortcuts + Help Overlay
+// =========================================================
+(function() {
+  var shortcutsOverlay = document.getElementById('shortcutsOverlay');
+  var shortcutsBackdrop = document.getElementById('shortcutsBackdrop');
+  var shortcutsClose = document.getElementById('shortcutsClose');
+  var cmdPaletteOverlay = document.getElementById('cmdPaletteOverlay');
+
+  function openShortcuts() {
+    shortcutsOverlay.classList.add('open');
+  }
+  function closeShortcuts() {
+    shortcutsOverlay.classList.remove('open');
+  }
+  function toggleShortcuts() {
+    if (shortcutsOverlay.classList.contains('open')) {
+      closeShortcuts();
+    } else {
+      closeCmdPalette();
+      openShortcuts();
+    }
+  }
+
+  shortcutsBackdrop.addEventListener('click', closeShortcuts);
+  shortcutsClose.addEventListener('click', closeShortcuts);
+
+  // Theme cycling
+  var themes = ['dark', 'light', 'neon', 'solarized'];
+  function cycleTheme() {
+    var current = localStorage.getItem('llm-theme') || 'dark';
+    var idx = themes.indexOf(current);
+    var next = themes[(idx + 1) % themes.length];
+    setTheme(next);
+  }
+
+  // Section jump targets
+  var sectionTargets = [
+    { id: 'overview', num: 1 },
+    { id: 'speed', num: 2 },
+    { id: 'quality', num: 3 },
+    { id: 'categories', num: 4 },
+    { id: 'deep-dive', num: 5 },
+    { id: 'insights', num: 6 },
+  ];
+
+  function isInputFocused() {
+    var tag = document.activeElement && document.activeElement.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  }
+
+  document.addEventListener('keydown', function(e) {
+    // Cmd+K / Ctrl+K: command palette (always works, even in inputs)
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      toggleCmdPalette();
+      return;
+    }
+
+    // Esc: close any overlay
+    if (e.key === 'Escape') {
+      if (cmdPaletteOverlay.classList.contains('open')) {
+        closeCmdPalette();
+        return;
+      }
+      if (shortcutsOverlay.classList.contains('open')) {
+        closeShortcuts();
+        return;
+      }
+      return;
+    }
+
+    // Guard: ignore single-key shortcuts when in input
+    if (isInputFocused()) return;
+
+    switch (e.key) {
+      case '?':
+        e.preventDefault();
+        toggleShortcuts();
+        break;
+      case 't':
+        e.preventDefault();
+        cycleTheme();
+        break;
+      case 'g':
+        e.preventDefault();
+        window.open('https://github.com/parsamivehchi/tps.sh', '_blank');
+        break;
+      case 'Home':
+      case '0':
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      case 'n':
+        e.preventDefault();
+        window.location.href = 'hardware.html';
+        break;
+      case 'l':
+        e.preventDefault();
+        window.location.href = '../index.html';
+        break;
+      case 'm':
+        e.preventDefault();
+        window.open('https://parsamivehchi.github.io/mac-setup/', '_blank');
+        break;
+      default:
+        // Number keys 1-6 for section jumps
+        var num = parseInt(e.key, 10);
+        if (num >= 1 && num <= 6) {
+          e.preventDefault();
+          var target = sectionTargets[num - 1];
+          var el = document.getElementById(target.id);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+        break;
+    }
+  });
+
+  // Expose for command palette
+  window._openShortcuts = openShortcuts;
+  window._cycleTheme = cycleTheme;
+})();
+
+// =========================================================
+// Command Palette (Batch 4)
+// =========================================================
+var closeCmdPalette, toggleCmdPalette;
+(function() {
+  var overlay = document.getElementById('cmdPaletteOverlay');
+  var backdrop = document.getElementById('cmdPaletteBackdrop');
+  var input = document.getElementById('cmdPaletteInput');
+  var list = document.getElementById('cmdPaletteList');
+  var activeIndex = 0;
+
+  var commands = [
+    { cat: 'Section', name: 'Go to Overview', action: function() { document.getElementById('overview').scrollIntoView({ behavior: 'smooth' }); } },
+    { cat: 'Section', name: 'Go to Speed', action: function() { document.getElementById('speed').scrollIntoView({ behavior: 'smooth' }); } },
+    { cat: 'Section', name: 'Go to Quality', action: function() { document.getElementById('quality').scrollIntoView({ behavior: 'smooth' }); } },
+    { cat: 'Section', name: 'Go to Categories', action: function() { document.getElementById('categories').scrollIntoView({ behavior: 'smooth' }); } },
+    { cat: 'Section', name: 'Go to Full Data', action: function() { document.getElementById('deep-dive').scrollIntoView({ behavior: 'smooth' }); } },
+    { cat: 'Section', name: 'Go to Insights', action: function() { document.getElementById('insights').scrollIntoView({ behavior: 'smooth' }); } },
+    { cat: 'Theme', name: 'Theme: Dark', action: function() { setTheme('dark'); } },
+    { cat: 'Theme', name: 'Theme: Light', action: function() { setTheme('light'); } },
+    { cat: 'Theme', name: 'Theme: Neon', action: function() { setTheme('neon'); } },
+    { cat: 'Theme', name: 'Theme: Solarized', action: function() { setTheme('solarized'); } },
+    { cat: 'Page', name: 'Go to Landing Page', action: function() { window.location.href = '../index.html'; } },
+    { cat: 'Page', name: 'Go to Hardware Guide', action: function() { window.location.href = 'hardware.html'; } },
+    { cat: 'Page', name: 'Go to Setup Kit', action: function() { window.open('https://parsamivehchi.github.io/mac-setup/', '_blank'); } },
+    { cat: 'Action', name: 'Open GitHub Repository', action: function() { window.open('https://github.com/parsamivehchi/tps.sh', '_blank'); } },
+    { cat: 'Action', name: 'Show Keyboard Shortcuts', action: function() { window._openShortcuts(); } },
+  ];
+
+  function getFiltered() {
+    var q = input.value.toLowerCase().trim();
+    if (!q) return commands;
+    return commands.filter(function(c) {
+      return c.name.toLowerCase().includes(q) || c.cat.toLowerCase().includes(q);
+    });
+  }
+
+  function render() {
+    var filtered = getFiltered();
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="cmd-palette-empty">No matching commands</div>';
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(function(cmd, i) {
+      var item = document.createElement('div');
+      item.className = 'cmd-palette-item' + (i === activeIndex ? ' active' : '');
+      item.innerHTML = '<span class="cmd-cat">' + cmd.cat + '</span><span class="cmd-name">' + cmd.name + '</span>';
+      item.addEventListener('click', function() {
+        closeCmdPalette();
+        cmd.action();
+      });
+      item.addEventListener('mouseenter', function() {
+        activeIndex = i;
+        updateActive();
+      });
+      list.appendChild(item);
+    });
+  }
+
+  function updateActive() {
+    var items = list.querySelectorAll('.cmd-palette-item');
+    items.forEach(function(item, i) {
+      item.classList.toggle('active', i === activeIndex);
+    });
+    // Scroll active into view
+    var activeItem = list.querySelector('.cmd-palette-item.active');
+    if (activeItem) {
+      activeItem.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function openPalette() {
+    overlay.classList.add('open');
+    input.value = '';
+    activeIndex = 0;
+    render();
+    setTimeout(function() { input.focus(); }, 50);
+  }
+
+  closeCmdPalette = function() {
+    overlay.classList.remove('open');
+    input.value = '';
+  };
+
+  toggleCmdPalette = function() {
+    if (overlay.classList.contains('open')) {
+      closeCmdPalette();
+    } else {
+      // Close shortcuts if open
+      document.getElementById('shortcutsOverlay').classList.remove('open');
+      openPalette();
+    }
+  };
+
+  backdrop.addEventListener('click', closeCmdPalette);
+
+  input.addEventListener('input', function() {
+    activeIndex = 0;
+    render();
+  });
+
+  input.addEventListener('keydown', function(e) {
+    var filtered = getFiltered();
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
+      updateActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActive();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filtered[activeIndex]) {
+        closeCmdPalette();
+        filtered[activeIndex].action();
+      }
+    }
+  });
+})();
+
+// =========================================================
+// Welcome Toast — First Visit Only
+// =========================================================
+(function() {
+  var WELCOME_KEY = 'tps-welcome-seen';
+  if (!localStorage.getItem(WELCOME_KEY)) {
+    var toast = document.getElementById('welcomeToast');
+    if (toast) {
+      setTimeout(function() { toast.classList.add('visible'); }, 1500);
+      localStorage.setItem(WELCOME_KEY, '1');
+      var dismiss = function() {
+        toast.classList.remove('visible');
+        toast.classList.add('hiding');
+      };
+      document.getElementById('welcomeDismiss').addEventListener('click', dismiss);
+      setTimeout(dismiss, 9500);
+    }
+  }
+})();
 </script>
 </body>
 </html>

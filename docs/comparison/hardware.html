@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>tps.sh — On-Premise LLM Infrastructure Guide</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚡</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -581,6 +582,367 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
   .hw-card { padding: 14px; }
   .context-card { padding: 14px 10px; }
 }
+
+/* ============================================================
+   READING PROGRESS BAR
+   ============================================================ */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--emerald, #10b981), var(--accent, #3b82f6));
+  z-index: 10000;
+  pointer-events: none;
+  transition: width 0.1s linear;
+}
+
+/* ============================================================
+   SCROLL-TO-TOP BUTTON
+   ============================================================ */
+.scroll-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s, background 0.2s, color 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.scroll-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.scroll-to-top:hover {
+  background: var(--accent);
+  color: var(--bg-deep);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS HELP OVERLAY
+   ============================================================ */
+.shortcuts-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+}
+.shortcuts-overlay.open {
+  display: flex;
+}
+.shortcuts-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+.shortcuts-panel h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+.shortcuts-panel .shortcuts-close {
+  float: right;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.shortcuts-panel .shortcuts-close:hover {
+  color: var(--text-primary);
+}
+.shortcuts-group {
+  margin-bottom: 20px;
+}
+.shortcuts-group-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+.shortcut-row span {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+kbd {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   COMMAND PALETTE
+   ============================================================ */
+.command-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+}
+.command-palette-overlay.open {
+  display: flex;
+}
+.command-palette {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  max-width: 560px;
+  width: 92%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.command-palette-input {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  outline: none;
+}
+.command-palette-input::placeholder {
+  color: var(--text-muted);
+}
+.command-palette-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.command-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.command-palette-item:hover,
+.command-palette-item.active {
+  background: var(--bg-surface);
+}
+.command-palette-item .cp-category {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  min-width: 72px;
+}
+.command-palette-item .cp-name {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.command-palette-empty {
+  padding: 24px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ============================================================
+   SECTION ANCHOR LINKS
+   ============================================================ */
+.section-title {
+  position: relative;
+}
+.section-anchor {
+  opacity: 0;
+  margin-left: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.7em;
+  font-weight: 400;
+  transition: opacity 0.2s, color 0.2s;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.section-title:hover .section-anchor,
+.section-anchor:focus {
+  opacity: 1;
+}
+.section-anchor:hover {
+  color: var(--accent);
+}
+.anchor-copied-toast {
+  position: fixed;
+  bottom: 80px;
+  right: 32px;
+  background: var(--emerald);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  z-index: 10003;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.anchor-copied-toast.show {
+  opacity: 1;
+}
+
+/* ============================================================
+   GITHUB NAV BUTTON
+   ============================================================ */
+.github-nav-link {
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s, transform 0.2s;
+  text-decoration: none;
+}
+.github-nav-link:hover {
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+.github-nav-link svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* ============================================================
+   FOOTER SHORTCUT HINTS
+   ============================================================ */
+.footer-shortcuts {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.footer-shortcuts kbd {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  nav, .phase-indicator, .scroll-to-top, .reading-progress,
+  .shortcuts-overlay, .command-palette-overlay, .glow-orb,
+  .anchor-copied-toast, .nav-toggle, [data-theme-btn],
+  .github-nav-link, .footer-shortcuts { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  body::before { display: none !important; }
+  * { color: #000 !important; border-color: #ccc !important; background: #fff !important; box-shadow: none !important; text-shadow: none !important; }
+  .hero h1 { -webkit-text-fill-color: #000 !important; background: none !important; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 11px; color: #666 !important; }
+  section, .card, .chart-card, .hw-card, .insight-card, .context-card { page-break-inside: avoid; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* ============================================================
+   WELCOME TOAST
+   ============================================================ */
+.welcome-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  z-index: 9998;
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  pointer-events: none;
+}
+.welcome-toast.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.welcome-toast.hiding {
+  transform: translateX(-50%) translateY(100px);
+  opacity: 0;
+}
+.welcome-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-card, rgba(30,30,30,0.95));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #aaa);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.welcome-content kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--accent, #6366f1);
+}
+.welcome-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #aaa);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.welcome-dismiss:hover {
+  opacity: 1;
+}
 </style>
 <script>
 (function(){
@@ -591,6 +953,7 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
 </script>
 </head>
 <body>
+<div class="reading-progress" id="readingProgress"></div>
 
 <div class="glow-orb emerald"></div>
 <div class="glow-orb violet"></div>
@@ -602,6 +965,7 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
     <div class="logo">TPS<span>.</span>SH</div>
     <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open'); this.textContent = this.textContent === '\u2630' ? '\u2715' : '\u2630';" aria-label="Toggle navigation">&#x2630;</button>
     <div class="nav-links">
+      <a href="../index.html" style="color:var(--emerald);font-weight:600;font-size:14px;">&larr; tps.sh</a>
       <a href="#bandwidth">Bandwidth</a>
       <a href="#calculator">Calculator</a>
       <a href="#hardware">Hardware</a>
@@ -616,6 +980,7 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
         <button onclick="setTheme('light')" title="Light" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="light">L</button>
         <button onclick="setTheme('neon')" title="Neon" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="neon">N</button>
         <button onclick="setTheme('solarized')" title="Solarized" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="solarized">S</button>
+        <a href="https://github.com/parsamivehchi/tps.sh" target="_blank" rel="noopener" class="github-nav-link" title="GitHub Repository" style="margin-left:6px;"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
       </div>
     </div>
   </div>
@@ -624,6 +989,7 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
 <div class="phase-indicator">
   <a href="index.html" class="phase-pill inactive">Phase 1: Benchmarks</a>
   <span class="phase-pill active">Phase 2: Hardware Guide</span>
+  <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank" class="phase-pill inactive">Phase 3: Setup Kit ↗</a>
 </div>
 
 <!-- HERO -->
@@ -978,9 +1344,52 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
   <div class="container">
     <p>tps.sh &bull; On-Premise Infrastructure Guide &bull; February 2026</p>
     <p style="margin-top:6px;font-size:11px;">Projections based on the bandwidth formula validated against 147 real benchmarks on M2 Max. Actual results may vary 10-20%.</p>
-    <p style="margin-top:8px;"><a href="index.html">View Phase 1 Benchmark Results (7 Models, 147 Tests)</a></p>
+    <p style="margin-top:8px;"><a href="index.html">View Phase 1 Benchmark Results (7 Models, 147 Tests)</a> &bull; <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank">Phase 3: Mac Setup Kit →</a> &bull; <a href="https://github.com/parsamivehchi/tps.sh" target="_blank" rel="noopener">GitHub Repository</a></p>
+    <p class="footer-shortcuts">Press <kbd>?</kbd> for keyboard shortcuts &middot; <kbd>&#8984;K</kbd> for command palette</p>
   </div>
 </footer>
+
+<!-- SCROLL TO TOP -->
+<button class="scroll-to-top" id="scrollToTop" title="Scroll to top (Home)" aria-label="Scroll to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+</button>
+
+<!-- TOAST FOR ANCHOR COPY -->
+<div class="anchor-copied-toast" id="anchorToast">Link copied!</div>
+
+<!-- KEYBOARD SHORTCUTS HELP -->
+<div class="shortcuts-overlay" id="shortcutsOverlay">
+  <div class="shortcuts-panel">
+    <button class="shortcuts-close" id="shortcutsClose" aria-label="Close">&times;</button>
+    <h2>Keyboard Shortcuts</h2>
+    <div class="shortcuts-group">
+      <div class="shortcuts-group-title">General</div>
+      <div class="shortcut-row"><span>Show this help</span><kbd>?</kbd></div>
+      <div class="shortcut-row"><span>Command palette</span><kbd>&#8984;K</kbd></div>
+      <div class="shortcut-row"><span>Cycle theme</span><kbd>t</kbd></div>
+      <div class="shortcut-row"><span>Close overlay</span><kbd>Esc</kbd></div>
+    </div>
+    <div class="shortcuts-group">
+      <div class="shortcuts-group-title">Navigation</div>
+      <div class="shortcut-row"><span>Scroll to top</span><kbd>Home</kbd> or <kbd>0</kbd></div>
+      <div class="shortcut-row"><span>Jump to section</span><kbd>1</kbd> &ndash; <kbd>9</kbd></div>
+      <div class="shortcut-row"><span>Open GitHub</span><kbd>g</kbd></div>
+    </div>
+    <div class="shortcuts-group">
+      <div class="shortcuts-group-title">Pages</div>
+      <div class="shortcut-row"><span>Phase 1 Results</span><kbd>p</kbd></div>
+      <div class="shortcut-row"><span>Landing Page</span><kbd>l</kbd></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div class="command-palette-overlay" id="commandPaletteOverlay">
+  <div class="command-palette">
+    <input type="text" class="command-palette-input" id="commandPaletteInput" placeholder="Type a command..." autocomplete="off" spellcheck="false">
+    <div class="command-palette-list" id="commandPaletteList"></div>
+  </div>
+</div>
 
 <script>
 // ============================================================
@@ -1576,6 +1985,325 @@ function updateThemeButtons(active) {
     }
   });
 })();
+
+// ============================================================
+// READING PROGRESS BAR
+// ============================================================
+(function() {
+  var progressBar = document.getElementById('readingProgress');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }, { passive: true });
+})();
+
+// ============================================================
+// SCROLL-TO-TOP BUTTON
+// ============================================================
+(function() {
+  var btn = document.getElementById('scrollToTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }, { passive: true });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+
+// ============================================================
+// SECTION ANCHOR LINKS
+// ============================================================
+(function() {
+  var toast = document.getElementById('anchorToast');
+  var toastTimer = null;
+  document.querySelectorAll('.section-title').forEach(function(title) {
+    // Find the parent section's ID
+    var section = title.closest('section[id]');
+    if (!section) return;
+    var id = section.id;
+    var anchor = document.createElement('a');
+    anchor.className = 'section-anchor';
+    anchor.href = '#' + id;
+    anchor.textContent = '#';
+    anchor.title = 'Copy link to section';
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      var url = window.location.origin + window.location.pathname + '#' + id;
+      history.replaceState(null, '', '#' + id);
+      navigator.clipboard.writeText(url).then(function() {
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 1800);
+      });
+    });
+    title.appendChild(anchor);
+  });
+})();
+
+// ============================================================
+// KEYBOARD SHORTCUTS + HELP OVERLAY
+// ============================================================
+(function() {
+  var shortcutsOverlay = document.getElementById('shortcutsOverlay');
+  var shortcutsClose = document.getElementById('shortcutsClose');
+  var commandPaletteOverlay = document.getElementById('commandPaletteOverlay');
+  var commandPaletteInput = document.getElementById('commandPaletteInput');
+
+  var themes = ['dark', 'light', 'neon', 'solarized'];
+
+  // Section IDs in order for number shortcuts
+  var sectionIds = ['bandwidth', 'calculator', 'hardware', 'projections', 'model-fit', 'cluster', 'cost', 'insights', 'decision'];
+
+  function isInputFocused() {
+    var el = document.activeElement;
+    if (!el) return false;
+    var tag = el.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable;
+  }
+
+  function closeAllOverlays() {
+    shortcutsOverlay.classList.remove('open');
+    commandPaletteOverlay.classList.remove('open');
+  }
+
+  function toggleShortcuts() {
+    if (commandPaletteOverlay.classList.contains('open')) commandPaletteOverlay.classList.remove('open');
+    shortcutsOverlay.classList.toggle('open');
+  }
+
+  function openCommandPalette() {
+    if (shortcutsOverlay.classList.contains('open')) shortcutsOverlay.classList.remove('open');
+    commandPaletteOverlay.classList.add('open');
+    commandPaletteInput.value = '';
+    renderCommands('');
+    setTimeout(function() { commandPaletteInput.focus(); }, 50);
+  }
+
+  shortcutsClose.addEventListener('click', function() {
+    shortcutsOverlay.classList.remove('open');
+  });
+
+  shortcutsOverlay.addEventListener('click', function(e) {
+    if (e.target === shortcutsOverlay) shortcutsOverlay.classList.remove('open');
+  });
+
+  commandPaletteOverlay.addEventListener('click', function(e) {
+    if (e.target === commandPaletteOverlay) commandPaletteOverlay.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', function(e) {
+    // Cmd+K / Ctrl+K: command palette (always works, even in inputs)
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (commandPaletteOverlay.classList.contains('open')) {
+        commandPaletteOverlay.classList.remove('open');
+      } else {
+        openCommandPalette();
+      }
+      return;
+    }
+
+    // Esc: close overlays
+    if (e.key === 'Escape') {
+      closeAllOverlays();
+      return;
+    }
+
+    // Guard: don't fire single-key shortcuts if typing in an input
+    if (isInputFocused()) return;
+
+    // ? : toggle help
+    if (e.key === '?') {
+      e.preventDefault();
+      toggleShortcuts();
+      return;
+    }
+
+    // t: cycle theme
+    if (e.key === 't') {
+      e.preventDefault();
+      var currentTheme = localStorage.getItem('llm-theme') || 'dark';
+      var idx = themes.indexOf(currentTheme);
+      var nextTheme = themes[(idx + 1) % themes.length];
+      setTheme(nextTheme);
+      return;
+    }
+
+    // g: open GitHub
+    if (e.key === 'g') {
+      window.open('https://github.com/parsamivehchi/tps.sh', '_blank');
+      return;
+    }
+
+    // Home or 0: scroll to top
+    if (e.key === 'Home' || e.key === '0') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 1-9: jump to section
+    var num = parseInt(e.key);
+    if (num >= 1 && num <= sectionIds.length) {
+      var secEl = document.getElementById(sectionIds[num - 1]);
+      if (secEl) {
+        e.preventDefault();
+        secEl.scrollIntoView({ behavior: 'smooth' });
+      }
+      return;
+    }
+
+    // p: navigate to Phase 1 results
+    if (e.key === 'p') {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // l: navigate to landing page
+    if (e.key === 'l') {
+      window.location.href = '../index.html';
+      return;
+    }
+  });
+})();
+
+// ============================================================
+// COMMAND PALETTE
+// ============================================================
+(function() {
+  var overlay = document.getElementById('commandPaletteOverlay');
+  var input = document.getElementById('commandPaletteInput');
+  var list = document.getElementById('commandPaletteList');
+  var activeIndex = 0;
+
+  // Build commands list
+  var sectionCommands = [
+    { category: 'Section', name: 'Go to Bandwidth', action: function() { document.getElementById('bandwidth').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Calculator', action: function() { document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Hardware', action: function() { document.getElementById('hardware').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Projections', action: function() { document.getElementById('projections').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Model Fit', action: function() { document.getElementById('model-fit').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Cluster', action: function() { document.getElementById('cluster').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Cost', action: function() { document.getElementById('cost').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Insights', action: function() { document.getElementById('insights').scrollIntoView({ behavior: 'smooth' }); } },
+    { category: 'Section', name: 'Go to Decision Helper', action: function() { document.getElementById('decision').scrollIntoView({ behavior: 'smooth' }); } },
+  ];
+
+  var themeCommands = [
+    { category: 'Theme', name: 'Theme: Dark', action: function() { setTheme('dark'); } },
+    { category: 'Theme', name: 'Theme: Light', action: function() { setTheme('light'); } },
+    { category: 'Theme', name: 'Theme: Neon', action: function() { setTheme('neon'); } },
+    { category: 'Theme', name: 'Theme: Solarized', action: function() { setTheme('solarized'); } },
+  ];
+
+  var pageCommands = [
+    { category: 'Page', name: 'Go to Landing Page', action: function() { window.location.href = '../index.html'; } },
+    { category: 'Page', name: 'Go to Phase 1 Results', action: function() { window.location.href = 'index.html'; } },
+    { category: 'Page', name: 'Go to Setup Kit', keys: 'M', action: function() { window.open('https://parsamivehchi.github.io/mac-setup/', '_blank'); } },
+  ];
+
+  var actionCommands = [
+    { category: 'Action', name: 'Open GitHub Repository', action: function() { window.open('https://github.com/parsamivehchi/tps.sh', '_blank'); } },
+    { category: 'Action', name: 'Show Keyboard Shortcuts', action: function() { document.getElementById('shortcutsOverlay').classList.add('open'); } },
+  ];
+
+  var allCommands = sectionCommands.concat(themeCommands, pageCommands, actionCommands);
+
+  function getFiltered(query) {
+    if (!query) return allCommands;
+    var q = query.toLowerCase();
+    return allCommands.filter(function(cmd) {
+      return cmd.name.toLowerCase().includes(q) || cmd.category.toLowerCase().includes(q);
+    });
+  }
+
+  window.renderCommands = function(query) {
+    var filtered = getFiltered(query);
+    activeIndex = 0;
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="command-palette-empty">No matching commands</div>';
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(function(cmd, i) {
+      var item = document.createElement('div');
+      item.className = 'command-palette-item' + (i === 0 ? ' active' : '');
+      item.innerHTML = '<span class="cp-category">' + cmd.category + '</span><span class="cp-name">' + cmd.name + '</span>';
+      item.addEventListener('click', function() {
+        overlay.classList.remove('open');
+        cmd.action();
+      });
+      item.addEventListener('mouseenter', function() {
+        list.querySelectorAll('.command-palette-item').forEach(function(el) { el.classList.remove('active'); });
+        item.classList.add('active');
+        activeIndex = i;
+      });
+      list.appendChild(item);
+    });
+  };
+
+  input.addEventListener('input', function() {
+    renderCommands(input.value);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    var items = list.querySelectorAll('.command-palette-item');
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      items[activeIndex].classList.remove('active');
+      activeIndex = (activeIndex + 1) % items.length;
+      items[activeIndex].classList.add('active');
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[activeIndex].classList.remove('active');
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      items[activeIndex].classList.add('active');
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items[activeIndex]) items[activeIndex].click();
+    }
+  });
+})();
 </script>
+
+<div class="welcome-toast" id="welcomeToast">
+  <div class="welcome-content">
+    <span class="welcome-text">
+      <kbd>?</kbd> shortcuts &nbsp;·&nbsp; <kbd>⌘K</kbd> command palette &nbsp;·&nbsp; <kbd>T</kbd> change theme
+    </span>
+    <button class="welcome-dismiss" id="welcomeDismiss" aria-label="Dismiss">&times;</button>
+  </div>
+</div>
+
+<script>
+// Welcome toast - first visit only
+(function() {
+  var WELCOME_KEY = 'tps-welcome-seen';
+  if (!localStorage.getItem(WELCOME_KEY)) {
+    var toast = document.getElementById('welcomeToast');
+    if (toast) {
+      setTimeout(function() { toast.classList.add('visible'); }, 1500);
+      localStorage.setItem(WELCOME_KEY, '1');
+      var dismiss = function() {
+        toast.classList.remove('visible');
+        toast.classList.add('hiding');
+      };
+      document.getElementById('welcomeDismiss').addEventListener('click', dismiss);
+      setTimeout(dismiss, 9500);
+    }
+  }
+})();
+</script>
+
 </body>
 </html>

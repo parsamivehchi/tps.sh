@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>tps.sh — Tokens Per Second LLM Benchmark</title>
 <meta name="description" content="Benchmark local Ollama models against Claude API on Apple Silicon. Tokens per second, quality scoring, and cost analysis across 7 models and 147 tests.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚡</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -879,6 +880,620 @@ body::after {
   .cli-cmd { font-size: 0.68rem; }
   body { font-size: 0.9rem; }
 }
+
+/* ═══════════════════════════════════════════════
+   BATCH 1: Reading Progress, Scroll-to-Top, Shortcuts
+   ═══════════════════════════════════════════════ */
+
+/* 1.1 Reading Progress Bar */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--neon-pink, #ff2d55), var(--neon-blue, #0ff));
+  z-index: 10000;
+  pointer-events: none;
+  transition: none;
+}
+
+/* 1.2 Scroll-to-Top Button */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scroll-top-btn:hover {
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+  box-shadow: 0 0 12px rgba(0,255,255,0.15);
+}
+
+/* 1.3 Keyboard Shortcuts Help Overlay */
+.shortcuts-overlay,
+.cmd-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.shortcuts-overlay.open,
+.cmd-palette-overlay.open {
+  display: flex;
+}
+
+.shortcuts-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 32px 36px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-family: 'Roboto Mono', monospace;
+  position: relative;
+}
+
+.shortcuts-panel h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.shortcuts-panel .shortcuts-sub {
+  font-size: 0.7rem;
+  color: var(--text-dimmer);
+  margin-bottom: 24px;
+}
+
+.shortcuts-panel .shortcuts-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  transition: all 0.2s;
+}
+
+.shortcuts-panel .shortcuts-close:hover {
+  border-color: var(--neon-pink);
+  color: var(--neon-pink);
+}
+
+.shortcuts-group {
+  margin-bottom: 20px;
+}
+
+.shortcuts-group-title {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--neon-pink);
+  margin-bottom: 10px;
+}
+
+.shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.shortcut-row .shortcut-keys {
+  display: flex;
+  gap: 4px;
+}
+
+kbd {
+  display: inline-block;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  background: var(--overlay-white);
+  color: var(--text);
+  min-width: 24px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   BATCH 2: Phase Bar, CTA, Sidebar Links
+   ═══════════════════════════════════════════════ */
+
+/* 2.3 Phase Bar */
+.phase-bar {
+  display: flex;
+  gap: 8px;
+  padding: 16px 60px;
+  border-bottom: 1px solid var(--border-dim);
+  background: var(--card-bg);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.phase-pill {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  padding: 6px 16px;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.phase-pill.active {
+  background: var(--neon-blue);
+  color: var(--bg);
+  border: 1px solid var(--neon-blue);
+  font-weight: 600;
+}
+
+.phase-pill.inactive {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.phase-pill.inactive:hover {
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+/* 2.4 Explore the Data CTA Section */
+.cta-section {
+  padding: 80px 60px;
+  border-bottom: 1px solid var(--border-dim);
+  text-align: center;
+}
+
+.cta-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-dim);
+  padding: 48px 40px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.cta-card h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.cta-card .cta-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-btn {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 14px 28px;
+  text-decoration: none;
+  background: transparent;
+  transition: all 0.25s ease;
+  letter-spacing: 1px;
+  display: inline-block;
+}
+
+.cta-btn.blue {
+  border: 2px solid var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+.cta-btn.blue:hover {
+  background: var(--neon-blue);
+  color: var(--bg);
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+
+.cta-btn.green {
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+}
+
+.cta-btn.green:hover {
+  background: var(--neon-green);
+  color: var(--bg);
+  box-shadow: 0 0 20px rgba(0,255,0,0.2);
+}
+
+/* ═══════════════════════════════════════════════
+   BATCH 3: Click-to-Copy CLI
+   ═══════════════════════════════════════════════ */
+.cli-line {
+  cursor: pointer;
+  position: relative;
+}
+
+.cli-copy-label {
+  font-size: 0.6rem;
+  color: var(--text-dimmer);
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cli-line:hover .cli-copy-label {
+  opacity: 1;
+}
+
+.cli-line:hover .cli-comment {
+  display: none;
+}
+
+.cli-copy-label.copied {
+  color: var(--neon-green);
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   BATCH 4: Command Palette
+   ═══════════════════════════════════════════════ */
+.cmd-palette {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  width: 90%;
+  max-width: 520px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.cmd-palette-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.cmd-palette-input::placeholder {
+  color: var(--text-dimmer);
+}
+
+.cmd-palette-list {
+  overflow-y: auto;
+  max-height: 50vh;
+  padding: 8px 0;
+}
+
+.cmd-palette-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.15s;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.cmd-palette-item:hover,
+.cmd-palette-item.active {
+  background: var(--overlay-white);
+  color: var(--text);
+}
+
+.cmd-palette-item .cmd-cat {
+  font-size: 0.6rem;
+  color: var(--text-dimmer);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+.cmd-palette-item .cmd-name {
+  flex: 1;
+}
+
+.cmd-palette-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-dimmer);
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════════
+   BATCH 5: Section Anchors, Table Sort, Counters, Active Nav
+   ═══════════════════════════════════════════════ */
+
+/* 5.1 Section Anchor Links */
+.section-title {
+  position: relative;
+}
+
+.section-anchor {
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dimmer);
+  text-decoration: none;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.section-title:hover .section-anchor {
+  opacity: 1;
+}
+
+.section-anchor:hover {
+  color: var(--neon-blue);
+}
+
+.anchor-copied {
+  position: absolute;
+  left: -24px;
+  top: -20px;
+  font-size: 0.6rem;
+  color: var(--neon-green);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.anchor-copied.show {
+  opacity: 1;
+}
+
+/* 5.2 Table Sorting */
+.results-table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.results-table thead th.sortable:hover {
+  color: var(--neon-blue);
+}
+
+.sort-indicator {
+  margin-left: 4px;
+  font-size: 0.7rem;
+  color: var(--neon-blue);
+}
+
+/* 5.4 Active Nav Highlighting */
+.sidebar-nav a.nav-active {
+  border-left: 2px solid var(--neon-blue);
+  color: var(--text);
+  background: var(--overlay-white);
+  padding-left: 10px;
+}
+
+/* ═══════════════════════════════════════════════
+   BATCH 6: Print Styles & Footer Hints
+   ═══════════════════════════════════════════════ */
+
+/* 6.1 Print Styles */
+@media print {
+  .sidebar,
+  .hamburger,
+  .sidebar-overlay,
+  .mobile-theme-bar,
+  .scroll-top-btn,
+  .reading-progress,
+  .shortcuts-overlay,
+  .cmd-palette-overlay,
+  .phase-bar,
+  .theme-switcher {
+    display: none !important;
+  }
+
+  .main {
+    margin-left: 0 !important;
+  }
+
+  body, .main, .section, .hero, .footer {
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .section-label,
+  .section-title,
+  .section-desc,
+  .card h3,
+  .card .card-desc,
+  .finding-card h4,
+  .finding-card p,
+  .results-table,
+  .results-table thead th,
+  .results-table tbody td {
+    color: #000 !important;
+  }
+
+  .card, .finding-card, .cat-card, .tech-item, .cli-block {
+    background: #fff !important;
+    border-color: #ccc !important;
+    box-shadow: none !important;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.7rem;
+    color: #666;
+  }
+
+  .section, .card, .finding-card, .cli-block, .results-table-wrap {
+    page-break-inside: avoid;
+  }
+
+  body::after {
+    display: none !important;
+  }
+}
+
+/* 6.2 Footer shortcut hints */
+.footer-hints {
+  margin-top: 16px;
+  font-size: 0.65rem;
+  color: var(--text-dimmer);
+}
+
+.footer-hints kbd {
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  vertical-align: middle;
+}
+
+/* Responsive adjustments for new features */
+@media (max-width: 900px) {
+  .phase-bar { padding: 12px 24px; }
+  .cta-section { padding: 60px 24px; }
+  .section-anchor { left: -20px; font-size: 0.8rem; }
+}
+
+@media (max-width: 600px) {
+  .phase-bar { padding: 10px 16px; gap: 6px; }
+  .phase-pill { font-size: 0.6rem; padding: 5px 12px; }
+  .cta-section { padding: 48px 16px; }
+  .cta-card { padding: 32px 20px; }
+  .cta-card h2 { font-size: 1.1rem; }
+  .cta-btn { padding: 12px 20px; font-size: 0.7rem; }
+  .shortcuts-panel { padding: 24px 20px; }
+  .cmd-palette { max-height: 80vh; }
+  .scroll-top-btn { bottom: 20px; right: 20px; width: 40px; height: 40px; font-size: 1rem; }
+  .section-anchor { display: none; }
+  .footer-hints { font-size: 0.6rem; }
+}
+
+/* ═══════════════════════════════════════════════
+   CTA Purple Button
+   ═══════════════════════════════════════════════ */
+.cta-btn.purple {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: #fff;
+}
+.cta-btn.purple:hover {
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+}
+
+/* ═══════════════════════════════════════════════
+   Welcome Toast
+   ═══════════════════════════════════════════════ */
+.welcome-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  z-index: 9998;
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  pointer-events: none;
+}
+.welcome-toast.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.welcome-toast.hiding {
+  transform: translateX(-50%) translateY(100px);
+  opacity: 0;
+}
+.welcome-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.85rem;
+  color: var(--text-secondary, #aaa);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.welcome-content kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--accent, var(--neon-blue, #0ff));
+}
+.welcome-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #aaa);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.welcome-dismiss:hover {
+  opacity: 1;
+}
 </style>
 <script>
 (function(){
@@ -889,6 +1504,49 @@ body::after {
 </script>
 </head>
 <body>
+<div class="reading-progress" id="readingProgress"></div>
+
+<!-- Scroll-to-Top Button -->
+<button class="scroll-top-btn" id="scrollTopBtn" title="Scroll to top (Home)" aria-label="Scroll to top">&#8593;</button>
+
+<!-- Keyboard Shortcuts Overlay -->
+<div class="shortcuts-overlay" id="shortcutsOverlay">
+  <div class="shortcuts-panel">
+    <button class="shortcuts-close" onclick="closeShortcuts()">ESC</button>
+    <h2>Keyboard Shortcuts</h2>
+    <div class="shortcuts-sub">Navigate faster with your keyboard</div>
+
+    <div class="shortcuts-group">
+      <div class="shortcuts-group-title">General</div>
+      <div class="shortcut-row"><span>Show this help</span><span class="shortcut-keys"><kbd>?</kbd></span></div>
+      <div class="shortcut-row"><span>Command palette</span><span class="shortcut-keys"><kbd>&#8984;</kbd><kbd>K</kbd></span></div>
+      <div class="shortcut-row"><span>Cycle theme</span><span class="shortcut-keys"><kbd>T</kbd></span></div>
+      <div class="shortcut-row"><span>Close overlay</span><span class="shortcut-keys"><kbd>Esc</kbd></span></div>
+    </div>
+
+    <div class="shortcuts-group">
+      <div class="shortcuts-group-title">Navigation</div>
+      <div class="shortcut-row"><span>Scroll to top</span><span class="shortcut-keys"><kbd>Home</kbd> / <kbd>0</kbd></span></div>
+      <div class="shortcut-row"><span>Go to section 1-7</span><span class="shortcut-keys"><kbd>1</kbd> &ndash; <kbd>7</kbd></span></div>
+      <div class="shortcut-row"><span>Open GitHub repo</span><span class="shortcut-keys"><kbd>G</kbd></span></div>
+    </div>
+
+    <div class="shortcuts-group">
+      <div class="shortcuts-group-title">Pages</div>
+      <div class="shortcut-row"><span>Interactive Results</span><span class="shortcut-keys"><kbd>I</kbd></span></div>
+      <div class="shortcut-row"><span>Hardware Guide</span><span class="shortcut-keys"><kbd>H</kbd></span></div>
+      <div class="shortcut-row"><span>Mac Setup Kit</span><span class="shortcut-keys"><kbd>M</kbd></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Command Palette Overlay -->
+<div class="cmd-palette-overlay" id="cmdPaletteOverlay">
+  <div class="cmd-palette" id="cmdPalette">
+    <input type="text" class="cmd-palette-input" id="cmdPaletteInput" placeholder="Type a command..." autocomplete="off" spellcheck="false">
+    <div class="cmd-palette-list" id="cmdPaletteList"></div>
+  </div>
+</div>
 
 <!-- Sidebar -->
 <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">
@@ -934,6 +1592,14 @@ body::after {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
       Interactive Results
     </a>
+    <a href="comparison/hardware.html" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/></svg>
+      Hardware Guide
+    </a>
+    <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Mac Setup Kit
+    </a>
   </div>
 </nav>
 
@@ -958,6 +1624,14 @@ body::after {
       <div class="meta-badge"><span class="val">M2 Max</span> Hardware</div>
     </div>
   </section>
+
+  <!-- Phase Bar -->
+  <div class="phase-bar">
+    <span class="phase-pill active">Landing</span>
+    <a href="comparison/index.html" class="phase-pill inactive">Interactive Results</a>
+    <a href="comparison/hardware.html" class="phase-pill inactive">Hardware Guide</a>
+    <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank" class="phase-pill inactive">Setup Kit ↗</a>
+  </div>
 
   <!-- Results -->
   <section class="section" id="results">
@@ -1295,11 +1969,26 @@ body::after {
     </div>
   </section>
 
+  <!-- Explore the Data CTA -->
+  <section class="cta-section reveal">
+    <div class="cta-card">
+      <h2>Dive Into the Data</h2>
+      <p class="cta-subtitle">Interactive Chart.js visualizations, hardware analysis, and the full comparison.</p>
+      <div class="cta-buttons">
+        <a href="comparison/index.html" class="cta-btn blue">INTERACTIVE RESULTS &rarr;</a>
+        <a href="comparison/hardware.html" class="cta-btn green">HARDWARE GUIDE &rarr;</a>
+        <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank" class="cta-btn purple">MAC SETUP KIT ↗</a>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="footer">
     <p><a href="https://github.com/parsamivehchi/tps.sh">github.com/parsamivehchi/tps.sh</a></p>
     <p>tps.sh &middot; Built for Apple Silicon &middot; February 2026</p>
+    <p><a href="comparison/index.html">Interactive Results</a> &middot; <a href="comparison/hardware.html">Hardware Guide</a> &middot; <a href="https://parsamivehchi.github.io/mac-setup/" target="_blank">Mac Setup Kit</a></p>
     <div class="footer-stats">7 models &middot; 147 tests &middot; 21 prompts &middot; 7 categories</div>
+    <div class="footer-hints">Press <kbd>?</kbd> for keyboard shortcuts &middot; <kbd>&#8984;K</kbd> for command palette</div>
   </footer>
 
 </div>
@@ -1340,12 +2029,12 @@ function typeLoop() {
 typeLoop();
 
 // Scroll reveal
-const observer = new IntersectionObserver(entries => {
+const revealObserver = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) e.target.classList.add('visible');
   });
 }, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 // Sidebar toggle with overlay
 function toggleSidebar() {
@@ -1389,6 +2078,8 @@ window.addEventListener('resize', function() {
 });
 
 // Theme switching
+const themeList = ['dark', 'light', 'neon', 'solarized'];
+
 function setTheme(theme) {
   if (theme === 'dark') {
     document.documentElement.removeAttribute('data-theme');
@@ -1397,6 +2088,13 @@ function setTheme(theme) {
   }
   localStorage.setItem('llm-theme', theme);
   updateThemeButtons(theme);
+}
+
+function cycleTheme() {
+  var current = localStorage.getItem('llm-theme') || 'dark';
+  var idx = themeList.indexOf(current);
+  var next = themeList[(idx + 1) % themeList.length];
+  setTheme(next);
 }
 
 function updateThemeButtons(active) {
@@ -1421,6 +2119,565 @@ function updateThemeButtons(active) {
   var t = localStorage.getItem('llm-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   updateThemeButtons(t);
 })();
+
+// ═══════════════════════════════════════════════
+// BATCH 1: Reading Progress, Scroll-to-Top, Shortcuts
+// ═══════════════════════════════════════════════
+
+// 1.1 Reading Progress Bar
+var readingProgress = document.getElementById('readingProgress');
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY;
+  var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  readingProgress.style.width = progress + '%';
+}, { passive: true });
+
+// 1.2 Scroll-to-Top Button
+var scrollTopBtn = document.getElementById('scrollTopBtn');
+window.addEventListener('scroll', function() {
+  if (window.scrollY > 400) {
+    scrollTopBtn.classList.add('visible');
+  } else {
+    scrollTopBtn.classList.remove('visible');
+  }
+}, { passive: true });
+
+scrollTopBtn.addEventListener('click', function() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// 1.3 Keyboard Shortcuts & Help Overlay
+function closeShortcuts() {
+  document.getElementById('shortcutsOverlay').classList.remove('open');
+}
+
+function toggleShortcuts() {
+  var overlay = document.getElementById('shortcutsOverlay');
+  overlay.classList.toggle('open');
+}
+
+function closeAllOverlays() {
+  document.getElementById('shortcutsOverlay').classList.remove('open');
+  closeCmdPalette();
+  closeSidebar();
+}
+
+// Section map for keyboard navigation
+var sectionIds = ['hero', 'results', 'architecture', 'categories', 'findings', 'cli', 'stack'];
+
+document.addEventListener('keydown', function(e) {
+  // Guard: ignore when focus is in input/textarea/select
+  var tag = document.activeElement.tagName.toLowerCase();
+  var isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
+
+  // Command palette: Cmd+K / Ctrl+K (always works)
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    toggleCmdPalette();
+    return;
+  }
+
+  // Escape: close overlays (always works)
+  if (e.key === 'Escape') {
+    closeAllOverlays();
+    return;
+  }
+
+  // Everything below is guarded from inputs
+  if (isInput) return;
+
+  // ? to toggle shortcuts help
+  if (e.key === '?') {
+    e.preventDefault();
+    toggleShortcuts();
+    return;
+  }
+
+  // t to cycle theme
+  if (e.key === 't' || e.key === 'T') {
+    e.preventDefault();
+    cycleTheme();
+    return;
+  }
+
+  // g to open GitHub
+  if (e.key === 'g' || e.key === 'G') {
+    e.preventDefault();
+    window.open('https://github.com/parsamivehchi/tps.sh', '_blank');
+    return;
+  }
+
+  // Home or 0 to scroll to top
+  if (e.key === 'Home' || e.key === '0') {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  // 1-7 to jump to sections
+  var num = parseInt(e.key);
+  if (num >= 1 && num <= 7) {
+    e.preventDefault();
+    var targetId = sectionIds[num - 1];
+    var target = document.getElementById(targetId);
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  // i to navigate to Interactive Results
+  if (e.key === 'i' || e.key === 'I') {
+    e.preventDefault();
+    window.location.href = 'comparison/index.html';
+    return;
+  }
+
+  // h to navigate to Hardware Guide
+  if (e.key === 'h' || e.key === 'H') {
+    e.preventDefault();
+    window.location.href = 'comparison/hardware.html';
+    return;
+  }
+
+  // m to open Mac Setup Kit
+  if (e.key === 'm' || e.key === 'M') {
+    e.preventDefault();
+    window.open('https://parsamivehchi.github.io/mac-setup/', '_blank');
+    return;
+  }
+});
+
+// ═══════════════════════════════════════════════
+// BATCH 3: Click-to-Copy CLI Commands
+// ═══════════════════════════════════════════════
+
+document.querySelectorAll('.cli-line').forEach(function(line) {
+  // Add copy label
+  var label = document.createElement('span');
+  label.className = 'cli-copy-label';
+  label.textContent = 'CLICK TO COPY';
+  line.appendChild(label);
+
+  line.addEventListener('click', function() {
+    var cmd = line.querySelector('.cli-cmd');
+    if (!cmd) return;
+    navigator.clipboard.writeText(cmd.textContent).then(function() {
+      label.textContent = 'COPIED!';
+      label.classList.add('copied');
+      setTimeout(function() {
+        label.textContent = 'CLICK TO COPY';
+        label.classList.remove('copied');
+      }, 1500);
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════
+// BATCH 4: Command Palette
+// ═══════════════════════════════════════════════
+
+var cmdPaletteActive = -1;
+
+// Build command list
+var sectionNames = ['Home', 'Results', 'Architecture', 'Prompt Categories', 'Key Findings', 'CLI Commands', 'Tech Stack'];
+var commands = [];
+
+// Section jumps
+sectionIds.forEach(function(id, i) {
+  commands.push({
+    cat: 'NAV',
+    name: 'Go to ' + sectionNames[i],
+    action: function() {
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+
+// Theme switches
+themeList.forEach(function(t) {
+  commands.push({
+    cat: 'THEME',
+    name: 'Theme: ' + t.charAt(0).toUpperCase() + t.slice(1),
+    action: function() { setTheme(t); }
+  });
+});
+
+// Page navigation
+commands.push({
+  cat: 'PAGE',
+  name: 'Go to Interactive Results',
+  action: function() { window.location.href = 'comparison/index.html'; }
+});
+commands.push({
+  cat: 'PAGE',
+  name: 'Go to Hardware Guide',
+  action: function() { window.location.href = 'comparison/hardware.html'; }
+});
+commands.push({
+  cat: 'PAGE',
+  name: 'Open Mac Setup Kit',
+  action: function() { window.open('https://parsamivehchi.github.io/mac-setup/', '_blank'); }
+});
+
+// Actions
+commands.push({
+  cat: 'ACTION',
+  name: 'Open GitHub Repository',
+  action: function() { window.open('https://github.com/parsamivehchi/tps.sh', '_blank'); }
+});
+commands.push({
+  cat: 'ACTION',
+  name: 'Show Keyboard Shortcuts',
+  action: function() { toggleShortcuts(); }
+});
+
+var cmdPaletteListEl = document.getElementById('cmdPaletteList');
+var cmdPaletteInputEl = document.getElementById('cmdPaletteInput');
+
+function openCmdPalette() {
+  document.getElementById('cmdPaletteOverlay').classList.add('open');
+  cmdPaletteInputEl.value = '';
+  cmdPaletteActive = -1;
+  renderCmdPalette('');
+  setTimeout(function() { cmdPaletteInputEl.focus(); }, 50);
+}
+
+function closeCmdPalette() {
+  document.getElementById('cmdPaletteOverlay').classList.remove('open');
+  cmdPaletteInputEl.blur();
+}
+
+function toggleCmdPalette() {
+  var overlay = document.getElementById('cmdPaletteOverlay');
+  if (overlay.classList.contains('open')) {
+    closeCmdPalette();
+  } else {
+    openCmdPalette();
+  }
+}
+
+function renderCmdPalette(query) {
+  var filtered = commands.filter(function(cmd) {
+    return cmd.name.toLowerCase().includes(query.toLowerCase());
+  });
+
+  cmdPaletteListEl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    var empty = document.createElement('div');
+    empty.className = 'cmd-palette-empty';
+    empty.textContent = 'No matching commands';
+    cmdPaletteListEl.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach(function(cmd, i) {
+    var item = document.createElement('div');
+    item.className = 'cmd-palette-item' + (i === cmdPaletteActive ? ' active' : '');
+    item.innerHTML = '<span class="cmd-cat">' + cmd.cat + '</span><span class="cmd-name">' + cmd.name + '</span>';
+    item.addEventListener('click', function() {
+      closeCmdPalette();
+      cmd.action();
+    });
+    item.addEventListener('mouseenter', function() {
+      cmdPaletteActive = i;
+      updateCmdPaletteHighlight();
+    });
+    cmdPaletteListEl.appendChild(item);
+  });
+}
+
+function updateCmdPaletteHighlight() {
+  var items = cmdPaletteListEl.querySelectorAll('.cmd-palette-item');
+  items.forEach(function(item, i) {
+    item.classList.toggle('active', i === cmdPaletteActive);
+  });
+  // Scroll active into view
+  if (cmdPaletteActive >= 0 && items[cmdPaletteActive]) {
+    items[cmdPaletteActive].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function getFilteredCommands() {
+  var query = cmdPaletteInputEl.value;
+  return commands.filter(function(cmd) {
+    return cmd.name.toLowerCase().includes(query.toLowerCase());
+  });
+}
+
+cmdPaletteInputEl.addEventListener('input', function() {
+  cmdPaletteActive = -1;
+  renderCmdPalette(this.value);
+});
+
+cmdPaletteInputEl.addEventListener('keydown', function(e) {
+  var filtered = getFilteredCommands();
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    cmdPaletteActive = Math.min(cmdPaletteActive + 1, filtered.length - 1);
+    updateCmdPaletteHighlight();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    cmdPaletteActive = Math.max(cmdPaletteActive - 1, 0);
+    updateCmdPaletteHighlight();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (cmdPaletteActive >= 0 && cmdPaletteActive < filtered.length) {
+      closeCmdPalette();
+      filtered[cmdPaletteActive].action();
+    }
+  }
+});
+
+// Close palette on overlay click
+document.getElementById('cmdPaletteOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCmdPalette();
+});
+
+// Close shortcuts on overlay click
+document.getElementById('shortcutsOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeShortcuts();
+});
+
+// ═══════════════════════════════════════════════
+// BATCH 5: Section Anchors, Table Sort, Counters, Active Nav
+// ═══════════════════════════════════════════════
+
+// 5.1 Section Anchor Links
+document.querySelectorAll('.section-title').forEach(function(title) {
+  var section = title.closest('.section') || title.closest('.hero');
+  if (!section || !section.id) return;
+
+  var anchor = document.createElement('a');
+  anchor.className = 'section-anchor';
+  anchor.textContent = '#';
+  anchor.href = '#' + section.id;
+  anchor.title = 'Copy link to section';
+
+  var feedback = document.createElement('span');
+  feedback.className = 'anchor-copied';
+  feedback.textContent = 'Link copied!';
+
+  title.style.position = 'relative';
+  title.insertBefore(feedback, title.firstChild);
+  title.insertBefore(anchor, title.firstChild);
+
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    var url = window.location.origin + window.location.pathname + '#' + section.id;
+    navigator.clipboard.writeText(url).then(function() {
+      history.replaceState(null, '', '#' + section.id);
+      feedback.classList.add('show');
+      setTimeout(function() { feedback.classList.remove('show'); }, 1500);
+    });
+  });
+});
+
+// 5.2 Table Sorting
+(function() {
+  var table = document.querySelector('.results-table');
+  if (!table) return;
+  var thead = table.querySelector('thead');
+  var tbody = table.querySelector('tbody');
+  var headers = thead.querySelectorAll('th');
+
+  // Column definitions: index -> { type: 'string'|'number', key }
+  var sortableColumns = {
+    1: { type: 'string', name: 'Model' },
+    2: { type: 'string', name: 'Type' },
+    3: { type: 'number', name: 'TPS' },
+    4: { type: 'number', name: 'TTFT' },
+    5: { type: 'number', name: 'Avg Time' },
+    6: { type: 'number', name: 'Quality' },
+    7: { type: 'number', name: 'Cost' }
+  };
+
+  var currentSort = { col: -1, asc: true };
+
+  headers.forEach(function(th, idx) {
+    if (sortableColumns[idx]) {
+      th.classList.add('sortable');
+      th.addEventListener('click', function() {
+        var asc = (currentSort.col === idx) ? !currentSort.asc : true;
+        currentSort = { col: idx, asc: asc };
+        sortTable(idx, asc, sortableColumns[idx].type);
+        updateSortIndicators(idx, asc);
+      });
+    }
+  });
+
+  function parseNumeric(text) {
+    // Extract numeric value: strip $, s, Free -> 0, etc.
+    var clean = text.replace(/[^0-9.\-]/g, '');
+    if (text.toLowerCase().includes('free')) return 0;
+    var val = parseFloat(clean);
+    return isNaN(val) ? 0 : val;
+  }
+
+  function sortTable(colIdx, asc, type) {
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort(function(a, b) {
+      var cellA = a.querySelectorAll('td')[colIdx];
+      var cellB = b.querySelectorAll('td')[colIdx];
+      if (!cellA || !cellB) return 0;
+
+      if (type === 'number') {
+        var valA = parseNumeric(cellA.textContent);
+        var valB = parseNumeric(cellB.textContent);
+        return asc ? valA - valB : valB - valA;
+      } else {
+        var strA = cellA.textContent.trim().toLowerCase();
+        var strB = cellB.textContent.trim().toLowerCase();
+        return asc ? strA.localeCompare(strB) : strB.localeCompare(strA);
+      }
+    });
+    rows.forEach(function(row) { tbody.appendChild(row); });
+  }
+
+  function updateSortIndicators(activeIdx, asc) {
+    headers.forEach(function(th, idx) {
+      // Remove existing indicator
+      var existing = th.querySelector('.sort-indicator');
+      if (existing) existing.remove();
+
+      if (idx === activeIdx && sortableColumns[idx]) {
+        var span = document.createElement('span');
+        span.className = 'sort-indicator';
+        span.textContent = asc ? '\u25B4' : '\u25BE';
+        th.appendChild(span);
+      }
+    });
+  }
+})();
+
+// 5.3 Animated Counters
+(function() {
+  var badges = document.querySelectorAll('.meta-badge .val');
+  if (!badges.length) return;
+
+  var animated = false;
+
+  function animateCounter(el, target, duration) {
+    var isFloat = target.toString().includes('.');
+    var prefix = '';
+    var suffix = '';
+
+    // Detect $ prefix
+    var text = el.textContent.trim();
+    if (text.startsWith('$')) prefix = '$';
+
+    // Don't animate non-numeric values (like "M2 Max")
+    var numVal = parseFloat(target);
+    if (isNaN(numVal)) return;
+
+    var decimals = isFloat ? (target.toString().split('.')[1] || '').length : 0;
+    var startTime = null;
+
+    function step(timestamp) {
+      if (!startTime) startTime = timestamp;
+      var progress = Math.min((timestamp - startTime) / duration, 1);
+      // Cubic ease-out
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var current = numVal * eased;
+
+      if (decimals > 0) {
+        el.textContent = prefix + current.toFixed(decimals);
+      } else {
+        el.textContent = prefix + Math.round(current);
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = text; // Restore exact original text
+      }
+    }
+
+    el.textContent = prefix + (decimals > 0 ? (0).toFixed(decimals) : '0');
+    requestAnimationFrame(step);
+  }
+
+  var counterObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting && !animated) {
+        animated = true;
+        badges.forEach(function(badge) {
+          var text = badge.textContent.trim();
+          var numStr = text.replace(/[^0-9.]/g, '');
+          var numVal = parseFloat(numStr);
+          if (!isNaN(numVal)) {
+            animateCounter(badge, numStr, 1200);
+          }
+        });
+        counterObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  var heroMeta = document.querySelector('.hero-meta');
+  if (heroMeta) counterObserver.observe(heroMeta);
+})();
+
+// 5.4 Active Nav Highlighting
+(function() {
+  var navLinks = document.querySelectorAll('.sidebar-nav a');
+  var sections = [];
+
+  navLinks.forEach(function(link) {
+    var href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      var section = document.getElementById(href.slice(1));
+      if (section) sections.push({ el: section, link: link });
+    }
+  });
+
+  function updateActiveNav() {
+    var scrollPos = window.scrollY + 200;
+    var activeLink = null;
+
+    for (var i = sections.length - 1; i >= 0; i--) {
+      if (sections[i].el.offsetTop <= scrollPos) {
+        activeLink = sections[i].link;
+        break;
+      }
+    }
+
+    navLinks.forEach(function(link) { link.classList.remove('nav-active'); });
+    if (activeLink) activeLink.classList.add('nav-active');
+  }
+
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
+})();
+
+// Welcome toast - first visit only
+(function() {
+  var WELCOME_KEY = 'tps-welcome-seen';
+  if (!localStorage.getItem(WELCOME_KEY)) {
+    var toast = document.getElementById('welcomeToast');
+    if (toast) {
+      setTimeout(function() { toast.classList.add('visible'); }, 1500);
+      localStorage.setItem(WELCOME_KEY, '1');
+      var dismiss = function() {
+        toast.classList.remove('visible');
+        toast.classList.add('hiding');
+      };
+      document.getElementById('welcomeDismiss').addEventListener('click', dismiss);
+      setTimeout(dismiss, 9500);
+    }
+  }
+})();
 </script>
+
+<div class="welcome-toast" id="welcomeToast">
+  <div class="welcome-content">
+    <span class="welcome-text">
+      <kbd>?</kbd> shortcuts &nbsp;&middot;&nbsp; <kbd>&#8984;K</kbd> command palette &nbsp;&middot;&nbsp; <kbd>T</kbd> change theme
+    </span>
+    <button class="welcome-dismiss" id="welcomeDismiss" aria-label="Dismiss">&times;</button>
+  </div>
+</div>
+
 </body>
 </html>
