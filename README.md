@@ -9,6 +9,14 @@
 
 Benchmark local Ollama models against Claude API on Apple Silicon. Measures speed (tokens/sec, TTFT), quality (scored by Claude Sonnet), and cost across 21 coding prompts in 7 categories.
 
+**[View the live site](https://parsamivehchi.github.io/LLM-BENCH/)** · **[Interactive Results](https://parsamivehchi.github.io/LLM-BENCH/../comparison/)** · **[Hardware Guide](https://parsamivehchi.github.io/LLM-BENCH/../comparison/hardware.html)**
+
+<p align="center">
+  <a href="https://parsamivehchi.github.io/LLM-BENCH/">
+    <img src="docs/assets/screenshot.png" alt="LLM-BENCH Landing Page" width="720">
+  </a>
+</p>
+
 ## Results
 
 | Model | Type | TPS | TTFT | Avg Time | Quality | Cost |
@@ -200,3 +208,7 @@ Each output is scored by Claude Sonnet 4.6 on three weighted criteria:
 | Clarity | 25% | Is it well-structured and readable? |
 
 Scores where Claude judges its own outputs are flagged for potential bias.
+
+## Related
+
+**[LLM Setup Kit for Mac](https://github.com/parsamivehchi/llm-setup-kit-for-mac)** — The dev environment this was built on. Full macOS migration kit with Brewfile, Ollama, Ghostty, Starship, and 17-phase automated setup.
