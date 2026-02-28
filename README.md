@@ -9,7 +9,7 @@
 
 Benchmark local Ollama models against Claude API on Apple Silicon. Measures speed (tokens/sec, TTFT), quality (scored by Claude Sonnet), and cost across 21 coding prompts in 7 categories.
 
-**[View the live site](https://parsamivehchi.github.io/LLM-BENCH/)** · **[Interactive Results](https://parsamivehchi.github.io/LLM-BENCH/../comparison/)** · **[Hardware Guide](https://parsamivehchi.github.io/LLM-BENCH/../comparison/hardware.html)**
+**[View the live site](https://parsamivehchi.github.io/LLM-BENCH/)** · **[Interactive Results](https://parsamivehchi.github.io/LLM-BENCH/comparison/)** · **[Hardware Guide](https://parsamivehchi.github.io/LLM-BENCH/comparison/hardware.html)**
 
 <p align="center">
   <a href="https://parsamivehchi.github.io/LLM-BENCH/">
@@ -157,8 +157,8 @@ python -m llm_bench list-runs                         # List all benchmark runs
 | `reports/model_comparison_20260226.pptx` | PPTX | 11-slide comparison deck |
 | `reports/on_premise_llm_guide.docx` | Word | Hardware infrastructure guide |
 | `reports/on_premise_llm_infrastructure.pptx` | PPTX | Hardware infrastructure deck |
-| `comparison/index.html` | Web | Interactive benchmark comparison |
-| `comparison/hardware.html` | Web | Hardware comparison + calculators |
+| `docs/comparison/index.html` | Web | Interactive benchmark comparison |
+| `docs/comparison/hardware.html` | Web | Hardware comparison + calculators |
 | `dashboard/dist/` | React | Full dashboard with Recharts |
 
 ## Project Structure
@@ -177,7 +177,7 @@ LLM-BENCH/
 │   ├── export/               # Dashboard JSON export
 │   └── hardware/             # GPU/thermal/power monitoring
 ├── dashboard/                # React + Vite + Recharts dashboard
-├── comparison/               # Interactive comparison website (Chart.js)
+├── docs/comparison/          # Interactive comparison website (Chart.js)
 │   ├── index.html            # Benchmark results (Phase 1)
 │   └── hardware.html         # Hardware guide (Phase 2)
 ├── data/

@@ -21,13 +21,70 @@
   --card-bg: #0a0a0a;
   --border: #333;
   --border-dim: #1a1a1a;
+  --scanline-opacity: 0.03;
+  --overlay-white: rgba(255,255,255,0.03);
+  --table-header-bg: #111;
+}
+
+[data-theme="light"] {
+  --bg: #f5f5f5;
+  --sidebar-bg: #fff;
+  --text: #1a1a1a;
+  --text-dim: #555;
+  --text-dimmer: #999;
+  --neon-pink: #cc00cc;
+  --neon-blue: #0099aa;
+  --neon-green: #008800;
+  --neon-yellow: #aa8800;
+  --card-bg: #fff;
+  --border: #d0d0d0;
+  --border-dim: #e5e5e5;
+  --scanline-opacity: 0;
+  --overlay-white: rgba(0,0,0,0.03);
+  --table-header-bg: #e8e8e8;
+}
+
+[data-theme="neon"] {
+  --bg: #0a0015;
+  --sidebar-bg: #050010;
+  --text: #fff;
+  --text-dim: #c0c0c0;
+  --text-dimmer: #808080;
+  --neon-pink: #ff33ff;
+  --neon-blue: #33ffff;
+  --neon-green: #33ff33;
+  --neon-yellow: #ffff33;
+  --card-bg: #0f0020;
+  --border: #6600aa;
+  --border-dim: #330066;
+  --scanline-opacity: 0.05;
+  --overlay-white: rgba(255,255,255,0.04);
+  --table-header-bg: #1a0030;
+}
+
+[data-theme="solarized"] {
+  --bg: #002b36;
+  --sidebar-bg: #073642;
+  --text: #839496;
+  --text-dim: #657b83;
+  --text-dimmer: #586e75;
+  --neon-pink: #d33682;
+  --neon-blue: #268bd2;
+  --neon-green: #859900;
+  --neon-yellow: #b58900;
+  --card-bg: #073642;
+  --border: #586e75;
+  --border-dim: #073642;
+  --scanline-opacity: 0;
+  --overlay-white: rgba(255,255,255,0.03);
+  --table-header-bg: #0a4050;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 body {
   font-family: 'Roboto Mono', monospace;
@@ -42,9 +99,10 @@ body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
   pointer-events: none;
   z-index: 9999;
+  opacity: var(--scanline-opacity);
 }
 
 /* Sidebar */
@@ -73,7 +131,7 @@ body::after {
 .sidebar-logo .accent { color: var(--neon-blue); }
 
 .sidebar-sub {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-dimmer);
   letter-spacing: 1px;
   margin-bottom: 32px;
@@ -85,7 +143,7 @@ body::after {
 .sidebar-nav a {
   color: var(--text-dim);
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   padding: 8px 12px;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -101,7 +159,7 @@ body::after {
 
 .sidebar-nav a:hover {
   color: var(--text);
-  background: rgba(255,255,255,0.03);
+  background: var(--overlay-white);
 }
 
 .sidebar-nav a:hover::before { opacity: 1; }
@@ -140,7 +198,7 @@ body::after {
 }
 
 .section-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--neon-pink);
@@ -148,7 +206,7 @@ body::after {
 }
 
 .section-title {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 8px;
@@ -156,7 +214,7 @@ body::after {
 }
 
 .section-desc {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-dim);
   max-width: 640px;
   margin-bottom: 40px;
@@ -195,7 +253,7 @@ body::after {
 }
 
 .hero h1 {
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.5rem);
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 8px;
@@ -208,7 +266,7 @@ body::after {
 }
 
 .hero-tagline {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-dim);
   margin-bottom: 32px;
   min-height: 1.6em;
@@ -262,15 +320,15 @@ body::after {
 .results-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   white-space: nowrap;
 }
 
 .results-table thead th {
-  background: #111;
+  background: var(--table-header-bg);
   padding: 12px 16px;
   text-align: left;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-dimmer);
@@ -285,7 +343,7 @@ body::after {
 }
 
 .results-table tbody tr:hover td {
-  background: rgba(255,255,255,0.02);
+  background: var(--overlay-white);
 }
 
 .results-table .model-name {
@@ -355,14 +413,14 @@ body::after {
 }
 
 .card h3 {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   margin-bottom: 6px;
   color: var(--text);
 }
 
 .card .card-desc {
-  font-size: 0.73rem;
+  font-size: 0.83rem;
   color: var(--text-dim);
   line-height: 1.6;
 }
@@ -404,7 +462,7 @@ body::after {
 }
 
 .cat-card h4 {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -429,14 +487,14 @@ body::after {
 }
 
 .finding-card h4 {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 8px;
   color: var(--text);
 }
 
 .finding-card p {
-  font-size: 0.73rem;
+  font-size: 0.83rem;
   color: var(--text-dim);
   line-height: 1.7;
 }
@@ -487,7 +545,7 @@ body::after {
   display: flex;
   gap: 12px;
   padding: 6px 0;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   align-items: baseline;
 }
 
@@ -500,6 +558,7 @@ body::after {
 .cli-cmd {
   color: var(--neon-blue);
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .cli-comment {
@@ -530,7 +589,7 @@ body::after {
 }
 
 .tech-item .tech-name {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 4px;
@@ -620,6 +679,13 @@ body::after {
   .cli-comment { margin-left: 0; }
 }
 </style>
+<script>
+(function(){
+  var t = localStorage.getItem('llm-theme');
+  if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  if (t !== 'dark') document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
 </head>
 <body>
 
@@ -641,11 +707,17 @@ body::after {
   </div>
 
   <div class="sidebar-footer">
+    <div class="theme-switcher" style="display:flex;gap:4px;margin-bottom:8px;">
+      <button onclick="setTheme('dark')" title="Dark" style="all:unset;cursor:pointer;font-family:'Roboto Mono',monospace;font-size:0.65rem;padding:4px 8px;border:1px solid var(--border);color:var(--text-dim);border-radius:3px;transition:all 0.2s;" data-theme-btn="dark">D</button>
+      <button onclick="setTheme('light')" title="Light" style="all:unset;cursor:pointer;font-family:'Roboto Mono',monospace;font-size:0.65rem;padding:4px 8px;border:1px solid var(--border);color:var(--text-dim);border-radius:3px;transition:all 0.2s;" data-theme-btn="light">L</button>
+      <button onclick="setTheme('neon')" title="Neon" style="all:unset;cursor:pointer;font-family:'Roboto Mono',monospace;font-size:0.65rem;padding:4px 8px;border:1px solid var(--border);color:var(--text-dim);border-radius:3px;transition:all 0.2s;" data-theme-btn="neon">N</button>
+      <button onclick="setTheme('solarized')" title="Solarized" style="all:unset;cursor:pointer;font-family:'Roboto Mono',monospace;font-size:0.65rem;padding:4px 8px;border:1px solid var(--border);color:var(--text-dim);border-radius:3px;transition:all 0.2s;" data-theme-btn="solarized">S</button>
+    </div>
     <a href="https://github.com/parsamivehchi/LLM-BENCH" target="_blank" rel="noopener">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
       GitHub
     </a>
-    <a href="../comparison/" target="_blank" rel="noopener">
+    <a href="comparison/index.html" target="_blank" rel="noopener">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
       Interactive Results
     </a>
@@ -1068,6 +1140,32 @@ function closeSidebar() {
     document.querySelector('.sidebar').classList.remove('open');
   }
 }
+
+// Theme switching
+function setTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+  localStorage.setItem('llm-theme', theme);
+  updateThemeButtons(theme);
+}
+
+function updateThemeButtons(active) {
+  document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+    const isActive = btn.getAttribute('data-theme-btn') === active;
+    btn.style.background = isActive ? 'var(--neon-blue)' : 'transparent';
+    btn.style.color = isActive ? 'var(--bg)' : 'var(--text-dim)';
+    btn.style.borderColor = isActive ? 'var(--neon-blue)' : 'var(--border)';
+  });
+}
+
+// Initialize theme buttons
+(function() {
+  var t = localStorage.getItem('llm-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  updateThemeButtons(t);
+})();
 </script>
 </body>
 </html>
