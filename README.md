@@ -1,6 +1,6 @@
-# LLM-BENCH
+# tps.sh
 
-**Local vs Cloud LLM Benchmarking Toolkit**
+**Tokens Per Second — LLM Benchmark**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue?logo=python&logoColor=white)
 ![Models](https://img.shields.io/badge/models-7-green)
@@ -9,11 +9,11 @@
 
 Benchmark local Ollama models against Claude API on Apple Silicon. Measures speed (tokens/sec, TTFT), quality (scored by Claude Sonnet), and cost across 21 coding prompts in 7 categories.
 
-**[View the live site](https://parsamivehchi.github.io/LLM-BENCH/)** · **[Interactive Results](https://parsamivehchi.github.io/LLM-BENCH/comparison/)** · **[Hardware Guide](https://parsamivehchi.github.io/LLM-BENCH/comparison/hardware.html)**
+**[View the live site](https://tps.sh)** · **[Interactive Results](https://tps.sh/comparison/)** · **[Hardware Guide](https://tps.sh/comparison/hardware.html)**
 
 <p align="center">
-  <a href="https://parsamivehchi.github.io/LLM-BENCH/">
-    <img src="docs/assets/screenshot.png" alt="LLM-BENCH Landing Page" width="720">
+  <a href="https://tps.sh">
+    <img src="docs/assets/screenshot.png" alt="tps.sh Landing Page" width="720">
   </a>
 </p>
 
@@ -33,8 +33,8 @@ Benchmark local Ollama models against Claude API on Apple Silicon. Measures spee
 
 ```bash
 # Clone
-git clone https://github.com/parsamivehchi/LLM-BENCH.git
-cd LLM-BENCH
+git clone https://github.com/parsamivehchi/tps.sh.git
+cd tps.sh
 
 # Install dependencies
 python -m venv .venv
@@ -164,7 +164,7 @@ python -m llm_bench list-runs                         # List all benchmark runs
 ## Project Structure
 
 ```
-LLM-BENCH/
+tps.sh/
 ├── llm_bench/               # Python package
 │   ├── cli.py               # Typer CLI (8 commands)
 │   ├── config.py             # Models, categories, constants
