@@ -1,0 +1,60 @@
+category: long_complex
+label: "Long Complex Research"
+description: "Multi-paragraph analysis and system design"
+prompts:
+  - id: lc_microservices_vs_monolith
+    title: "Microservices vs Monolith Analysis"
+    system: "You are a senior software architect with 15+ years of experience."
+    prompt: |
+      Write a comprehensive technical analysis comparing microservices architecture vs monolithic
+      architecture for a mid-size e-commerce platform (500K monthly users, 50 developers).
+
+      Cover:
+      1. Architecture overview and diagrams (ASCII)
+      2. Development velocity — team scaling, CI/CD, deployment frequency
+      3. Performance characteristics — latency, throughput, resource utilization
+      4. Operational complexity — monitoring, debugging, deployment
+      5. Data management — consistency, transactions, data duplication
+      6. Cost analysis — infrastructure, development, maintenance
+      7. Migration strategy if starting monolith-first
+      8. Decision framework — when to choose each approach
+
+      Include concrete examples, trade-offs for each point, and a final recommendation
+      with justification.
+
+  - id: lc_crdt_editor
+    title: "CRDT Collaborative Editor Design"
+    system: "You are an expert in distributed systems and collaborative editing."
+    prompt: |
+      Design a real-time collaborative text editor using CRDTs (Conflict-free Replicated Data Types).
+
+      Cover:
+      1. Why CRDTs over OT (Operational Transformation)? Trade-offs.
+      2. Choose a specific CRDT algorithm (e.g., RGA, YATA, Fugue) and explain why
+      3. Data structure design with code (pseudocode or Python)
+      4. Insert, delete, and concurrent edit operations with examples
+      5. Handling cursor positions and selections across peers
+      6. Network protocol for syncing changes (WebSocket message format)
+      7. Garbage collection / tombstone management
+      8. Performance analysis — memory, CPU, bandwidth per operation
+
+      Include ASCII diagrams showing how concurrent edits merge correctly.
+
+  - id: lc_https_lifecycle
+    title: "HTTPS Request Lifecycle Deep Dive"
+    system: "You are a networking expert. Explain with precision and depth."
+    prompt: |
+      Explain the complete lifecycle of an HTTPS request from the moment a user types
+      "https://www.example.com/api/data" in a browser to when the response is rendered.
+
+      Cover every layer in detail:
+      1. URL parsing and HSTS check
+      2. DNS resolution (recursive, iterative, caching layers, DoH/DoT)
+      3. TCP handshake (SYN, SYN-ACK, ACK with sequence numbers)
+      4. TLS 1.3 handshake (key exchange, cipher negotiation, certificate validation, OCSP)
+      5. HTTP/2 request (framing, HPACK header compression, stream multiplexing)
+      6. Server-side processing (load balancer, reverse proxy, application server)
+      7. Response transmission (chunked encoding, compression, connection reuse)
+      8. Browser rendering (DOM, CSSOM, layout, paint, composite)
+
+      Include timing estimates for each phase and optimization opportunities.

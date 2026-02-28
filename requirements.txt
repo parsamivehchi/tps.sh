@@ -1,0 +1,11 @@
+anthropic
+aiohttp
+typer[all]
+rich
+matplotlib
+python-docx
+python-pptx
+python-dotenv
+pyyaml
+pandas
+numpy

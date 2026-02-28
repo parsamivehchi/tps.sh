@@ -1,0 +1,95 @@
+category: debugging_reasoning
+label: "Debugging & Reasoning"
+description: "Find bugs and apply chain-of-thought reasoning"
+prompts:
+  - id: dr_async_rate_limiter
+    title: "Buggy Async Rate Limiter"
+    system: "You are a debugging expert. Identify all bugs, explain each one, and provide the corrected code."
+    prompt: |
+      Find and fix all bugs in this async rate limiter:
+
+      ```python
+      import asyncio
+      import time
+
+      class RateLimiter:
+          def __init__(self, max_requests, time_window):
+              self.max_requests = max_requests
+              self.time_window = time_window
+              self.requests = []
+              self.lock = asyncio.Lock
+
+          async def acquire(self):
+              async with self.lock:
+                  now = time.time()
+                  # Remove expired requests
+                  self.requests = [r for r in self.requests if r > now - self.time_window]
+
+                  if len(self.requests) >= self.max_requests:
+                      sleep_time = self.requests[0] - (now - self.time_window)
+                      await asyncio.sleep(sleep_time)
+
+                  self.requests.append(now)
+                  return True
+
+      async def fetch_data(url, limiter):
+          await limiter.acquire()
+          print(f"Fetching {url} at {time.time():.2f}")
+
+      async def main():
+          limiter = RateLimiter(3, 1.0)
+          urls = [f"https://api.example.com/data/{i}" for i in range(10)]
+          await asyncio.gather(*[fetch_data(url, limiter) for url in urls])
+
+      asyncio.run(main())
+      ```
+
+      For each bug: identify the line, explain why it's wrong, and show the fix.
+
+  - id: dr_fibonacci_offbyone
+    title: "Off-by-One Fibonacci"
+    system: "You are a debugging expert. Trace through the code step by step."
+    prompt: |
+      This function is supposed to return the nth Fibonacci number where fib(0)=0, fib(1)=1.
+      But it gives wrong results for several inputs. Trace through the logic for n=5 and find all issues:
+
+      ```python
+      def fibonacci(n, memo={}):
+          if n <= 1:
+              return 1
+          if n in memo:
+              return memo[n]
+          result = fibonacci(n-1, memo) + fibonacci(n-2, memo)
+          memo[n] = result
+          return result
+
+      # Expected: fib(0)=0, fib(1)=1, fib(5)=5, fib(10)=55
+      for i in range(11):
+          print(f"fib({i}) = {fibonacci(i)}")
+      ```
+
+  - id: dr_sql_query_failure
+    title: "Failing SQL Query Analysis"
+    system: "You are a database expert. Analyze the query, identify issues, and provide corrected version."
+    prompt: |
+      This SQL query is supposed to find the top 5 customers by total order value in the last 30 days,
+      but it returns wrong results. The database has these tables:
+
+      - customers(id, name, email, created_at)
+      - orders(id, customer_id, status, created_at)
+      - order_items(id, order_id, product_id, quantity, unit_price)
+
+      ```sql
+      SELECT c.name, SUM(oi.quantity * oi.unit_price) as total_value
+      FROM customers c
+      JOIN orders o ON c.id = o.customer_id
+      JOIN order_items oi ON o.id = oi.order_id
+      WHERE o.created_at > NOW() - INTERVAL 30 DAY
+      GROUP BY c.name
+      HAVING total_value > 0
+      ORDER BY total_value
+      LIMIT 5;
+      ```
+
+      Identify all issues (at least 3) with this query and provide the corrected version.
+      Consider: ordering, status filtering, name uniqueness, NULL handling, and date precision.

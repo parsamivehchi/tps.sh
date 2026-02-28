@@ -1,0 +1,58 @@
+category: explanation_teaching
+label: "Explanation & Teaching"
+description: "Tutorials, concept explainers, and educational content"
+prompts:
+  - id: et_python_gil
+    title: "Python GIL Explained"
+    system: "You are a CS educator who explains complex topics clearly with examples."
+    prompt: |
+      Explain the Python Global Interpreter Lock (GIL) for an intermediate Python developer.
+
+      Cover:
+      1. What the GIL is and why CPython has it (reference counting, memory safety)
+      2. How it affects multi-threaded Python programs (with code examples)
+      3. When threads ARE useful despite the GIL (I/O-bound vs CPU-bound)
+      4. Demonstrate with benchmarks: threading vs multiprocessing for CPU-bound work
+      5. Workarounds: multiprocessing, C extensions, asyncio, sub-interpreters (3.12+)
+      6. What other Python implementations do (PyPy, Jython, the free-threading PEP 703)
+      7. Common misconceptions and gotchas
+
+      Include runnable Python code examples with expected output.
+
+  - id: et_git_rebase_merge
+    title: "Git Rebase vs Merge Tutorial"
+    system: "You are a DevOps educator. Use clear diagrams and examples."
+    prompt: |
+      Create a comprehensive tutorial explaining git rebase vs git merge for a developer
+      who understands basic git but hasn't used rebase.
+
+      Include:
+      1. Visual ASCII diagrams showing commit history for both approaches
+      2. Step-by-step walkthrough of a real scenario (feature branch, main has new commits)
+      3. When to use merge vs rebase (team conventions, public vs private branches)
+      4. Interactive rebase (squash, fixup, reword, edit) with examples
+      5. The "golden rule" of rebasing (never rebase public branches)
+      6. How to handle rebase conflicts (step by step)
+      7. Common workflows: rebase-then-merge, squash merge, merge commits
+      8. Recovering from a bad rebase (reflog)
+
+      Use concrete git commands with example output.
+
+  - id: et_database_indexing
+    title: "Database Indexing Deep Dive"
+    system: "You are a database internals expert teaching senior developers."
+    prompt: |
+      Write a deep-dive tutorial on database indexing for PostgreSQL.
+
+      Cover:
+      1. How B-tree indexes work internally (with ASCII diagrams of the tree structure)
+      2. Index types: B-tree, Hash, GiST, GIN, BRIN — when to use each
+      3. Composite indexes: column order matters (explain with query examples)
+      4. Covering indexes (INCLUDE) to avoid table lookups
+      5. Partial indexes for filtered queries
+      6. Index-only scans vs index scans vs bitmap scans
+      7. EXPLAIN ANALYZE walkthrough (reading query plans)
+      8. Common indexing mistakes (over-indexing, wrong column order, unused indexes)
+      9. Monitoring: pg_stat_user_indexes, index bloat, maintenance
+
+      Include CREATE INDEX statements and EXPLAIN ANALYZE output examples.

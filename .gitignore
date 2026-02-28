@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/results/
+data/scored/
+data/exports/
+reports/*.docx
+reports/*.pptx
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.vite/
+.DS_Store
