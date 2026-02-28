@@ -20,27 +20,75 @@
   --qwen3: #10b981; --qwen25: #3b82f6;
   --haiku: #06b6d4; --sonnet: #8b5cf6; --opus: #ec4899;
   --accent: #818cf8;
+  --glow-opacity: 0.1;
+  --noise-opacity: 0.03;
+  --nav-bg: rgba(6,10,20,0.85);
+}
+
+[data-theme="light"] {
+  --bg-deep: #f8f9fc;
+  --bg-card: #fff;
+  --bg-surface: #eef1f6;
+  --border: #d4dae5;
+  --border-glow: #b8c4d8;
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #a0aec0;
+  --accent: #5a67d8;
+  --glow-opacity: 0;
+  --noise-opacity: 0;
+  --nav-bg: rgba(248,249,252,0.9);
+}
+
+[data-theme="neon"] {
+  --bg-deep: #0a0020;
+  --bg-card: #120030;
+  --bg-surface: #1a0040;
+  --border: #4400aa;
+  --border-glow: #6600cc;
+  --text-primary: #fff;
+  --text-secondary: #c0b0ff;
+  --text-muted: #7060aa;
+  --accent: #a78bfa;
+  --glow-opacity: 0.15;
+  --noise-opacity: 0.04;
+  --nav-bg: rgba(10,0,32,0.9);
+}
+
+[data-theme="solarized"] {
+  --bg-deep: #002b36;
+  --bg-card: #073642;
+  --bg-surface: #0a4050;
+  --border: #586e75;
+  --border-glow: #657b83;
+  --text-primary: #839496;
+  --text-secondary: #657b83;
+  --text-muted: #586e75;
+  --accent: #268bd2;
+  --glow-opacity: 0;
+  --noise-opacity: 0;
+  --nav-bg: rgba(0,43,54,0.9);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #1e3a5f #060a14; }
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--border) var(--bg-deep); }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 body { font-family: 'Outfit', sans-serif; background: var(--bg-deep); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
 .mono { font-family: 'IBM Plex Mono', monospace; }
-body::before { content: ''; position: fixed; inset: 0; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; }
-.glow-orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.1; pointer-events: none; z-index: 0; }
+body::before { content: ''; position: fixed; inset: 0; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: var(--noise-opacity); }
+.glow-orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: var(--glow-opacity); pointer-events: none; z-index: 0; }
 .glow-orb.emerald { width: 400px; height: 400px; background: #10b981; top: 5%; left: 10%; }
 .glow-orb.violet { width: 350px; height: 350px; background: #8b5cf6; top: 30%; right: 5%; }
 .glow-orb.cyan { width: 300px; height: 300px; background: #06b6d4; bottom: 20%; left: 20%; }
 .container { max-width: 1260px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 
-nav { position: sticky; top: 0; z-index: 100; background: rgba(6,10,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 14px 0; }
+nav { position: sticky; top: 0; z-index: 100; background: var(--nav-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 14px 0; }
 nav .container { display: flex; align-items: center; justify-content: space-between; }
 nav .logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
 nav .logo span { color: var(--qwen3); }
 nav .nav-links { display: flex; gap: 24px; }
-nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.2s; }
+nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 15px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.2s; }
 nav .nav-links a:hover { color: var(--text-primary); }
 
 .hero { padding: 100px 0 80px; text-align: center; }
@@ -48,15 +96,15 @@ nav .nav-links a:hover { color: var(--text-primary); }
 .hero .badge .dot { width: 6px; height: 6px; background: var(--qwen3); border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 .hero h1 { font-size: clamp(40px, 6vw, 68px); font-weight: 900; letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px; background: linear-gradient(135deg, #f0f4f8 20%, #8b5cf6 50%, #06b6d4 80%, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.hero .subtitle { font-size: 18px; color: var(--text-secondary); max-width: 640px; margin: 0 auto 40px; font-weight: 300; }
+.hero .subtitle { font-size: 20px; color: var(--text-secondary); max-width: 640px; margin: 0 auto 40px; font-weight: 300; }
 .hero .meta-row { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; }
 .hero .meta-item { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); }
 .hero .meta-item strong { color: var(--text-secondary); font-weight: 600; }
 
 section { padding: 80px 0; }
-.section-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-.section-title { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 12px; }
-.section-desc { color: var(--text-secondary); font-size: 15px; max-width: 640px; margin-bottom: 48px; }
+.section-label { font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.section-title { font-size: 36px; font-weight: 700; letter-spacing: -1px; margin-bottom: 12px; }
+.section-desc { color: var(--text-secondary); font-size: 17px; max-width: 640px; margin-bottom: 48px; }
 
 .group-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; padding-left: 4px; }
 .model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
@@ -68,29 +116,29 @@ section { padding: 80px 0; }
 .model-card:hover { transform: translateY(-3px); }
 .model-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
 .model-card .crown { position: absolute; top: 10px; right: 12px; font-size: 18px; }
-.model-card .name { font-weight: 700; font-size: 15px; margin-bottom: 1px; }
-.model-card .arch { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.model-card .name { font-weight: 700; font-size: 17px; margin-bottom: 1px; }
+.model-card .arch { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
 .model-card .stats { display: flex; flex-direction: column; gap: 10px; }
 .model-card .stat-row { display: flex; justify-content: space-between; align-items: baseline; }
-.model-card .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.model-card .stat-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 16px; }
+.model-card .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.model-card .stat-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; }
 
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 @media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
 .chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
 .chart-card.full { grid-column: 1 / -1; }
-.chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-.chart-card .chart-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+.chart-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+.chart-card .chart-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
 .chart-wrap { position: relative; height: 340px; }
 .chart-wrap.tall { height: 420px; }
 
 .speed-bars { display: flex; flex-direction: column; gap: 14px; }
 .speed-bar-row { display: grid; grid-template-columns: 170px 1fr 80px; align-items: center; gap: 14px; }
-.speed-bar-name { font-weight: 600; font-size: 13px; }
+.speed-bar-name { font-weight: 600; font-size: 15px; }
 .speed-bar-track { height: 28px; background: var(--bg-surface); border-radius: 8px; overflow: hidden; }
 .speed-bar-fill { height: 100%; border-radius: 8px; width: 0; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
 .speed-bar-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15)); border-radius: 0 8px 8px 0; }
-.speed-bar-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 15px; text-align: right; }
+.speed-bar-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 17px; text-align: right; }
 
 .heatmap-grid { display: grid; grid-template-columns: 170px repeat(5, 1fr); gap: 2px; font-size: 12px; }
 .heatmap-header { background: var(--bg-surface); padding: 8px 6px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-secondary); text-align: center; border-radius: 4px; }
@@ -103,7 +151,7 @@ section { padding: 80px 0; }
 .comp-table thead th { background: var(--bg-surface); padding: 10px 12px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
 .comp-table thead th:first-child { border-radius: 8px 0 0 0; }
 .comp-table thead th:last-child { border-radius: 0 8px 0 0; }
-.comp-table tbody td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+.comp-table tbody td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500; }
 .comp-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .comp-table .model-name-cell { font-family: 'Outfit', sans-serif; font-weight: 600; }
 .comp-table .best { font-weight: 700; }
@@ -112,15 +160,15 @@ section { padding: 80px 0; }
 @media (max-width: 768px) { .insight-cards { grid-template-columns: 1fr; } }
 .insight-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
 .insight-card .emoji { font-size: 28px; margin-bottom: 12px; }
-.insight-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-.insight-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.insight-card h4 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.insight-card p { font-size: 15px; color: var(--text-secondary); line-height: 1.6; }
 
 .quality-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
 .quality-high { background: rgba(16,185,129,0.15); color: #10b981; }
 .quality-mid { background: rgba(59,130,246,0.15); color: #3b82f6; }
 .quality-low { background: rgba(244,63,94,0.15); color: #f43f5e; }
 
-footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
+footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 14px; }
 
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -155,7 +203,16 @@ nav .nav-links a.next-link:hover { background: var(--accent); color: var(--bg-de
 /* Footer links */
 footer a { color: var(--accent); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
+
+[data-theme="light"] section[style] { background: var(--bg-surface) !important; }
 </style>
+<script>
+(function(){
+  var t = localStorage.getItem('llm-theme');
+  if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  if (t !== 'dark') document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
 </head>
 <body>
 
@@ -173,6 +230,12 @@ footer a:hover { text-decoration: underline; }
       <a href="#categories">Categories</a>
       <a href="#deep-dive">Deep Dive</a>
       <a href="#insights">Insights</a>
+      <div style="display:flex;gap:4px;align-items:center;margin-left:8px;">
+        <button onclick="setTheme('dark')" title="Dark" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="dark">D</button>
+        <button onclick="setTheme('light')" title="Light" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="light">L</button>
+        <button onclick="setTheme('neon')" title="Neon" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="neon">N</button>
+        <button onclick="setTheme('solarized')" title="Solarized" style="all:unset;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;transition:all 0.2s;" data-theme-btn="solarized">S</button>
+      </div>
       <a href="hardware.html" class="next-link">Hardware Guide &rarr;</a>
     </div>
   </div>
@@ -425,7 +488,6 @@ const M = [
   { name: 'qwen2.5-coder:14b', type: 'Local', color: '#3b82f6', tps: 15.6, ttft: 1.5, totalTime: 68.2, quality: 6.64, tokens: 21595, cost: 0 },
 ];
 
-// quality data per category: [haiku, sonnet, opus, qwen3, qwen25]
 const CATS = [
   { label: 'Code Generation', q: [8.7,8.5,8.4,8.5,7.4] },
   { label: 'Debugging & Reasoning', q: [8.8,9.6,9.4,7.8,7.2] },
@@ -435,78 +497,96 @@ const CATS = [
   { label: 'Explanation & Teaching', q: [7.5,8.0,7.9,5.6,5.4] },
   { label: 'Tool Calling / Agentic', q: [8.1,8.8,8.8,6.9,6.8] },
 ];
-// Already in M order (haiku, sonnet, opus, qwen3, qwen25)
 const CAT_REORDERED = CATS.map(c => ({ label: c.label, data: c.q }));
 
 const COLORS = M.map(m => m.color);
 const COLORS40 = COLORS.map(c => c + '66');
 
-Chart.defaults.color = '#8b9ec2';
-Chart.defaults.borderColor = '#1e2a3f';
-Chart.defaults.font.family = "'Outfit', sans-serif";
+// Chart instances storage
+let chartInstances = {};
 
-// TTFT
-new Chart(document.getElementById('ttftChart'), {
-  type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.ttft), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
-  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(1) + 's' } } }, scales: { x: { title: { display: true, text: 'Seconds' }, grid: { color: '#1e2a3f44' } }, y: { grid: { display: false } } } }
-});
+function getThemeColors() {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    textColor: style.getPropertyValue('--text-secondary').trim() || '#8b9ec2',
+    gridColor: (style.getPropertyValue('--border').trim() || '#1e2a3f') + '44',
+    bgDeep: style.getPropertyValue('--bg-deep').trim() || '#060a14',
+  };
+}
 
-// Response Time
-new Chart(document.getElementById('responseTimeChart'), {
-  type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.totalTime), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
-  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(1) + 's' } } }, scales: { x: { title: { display: true, text: 'Seconds' }, grid: { color: '#1e2a3f44' } }, y: { grid: { display: false } } } }
-});
+function createAllCharts() {
+  // Destroy existing
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
 
-// Quality Bar
-new Chart(document.getElementById('qualityBarChart'), {
-  type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.quality), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
-  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(2) + '/10' } } }, scales: { x: { min: 0, max: 10, title: { display: true, text: 'Score (1-10)' }, grid: { color: '#1e2a3f44' } }, y: { grid: { display: false } } } }
-});
+  const tc = getThemeColors();
+  Chart.defaults.color = tc.textColor;
+  Chart.defaults.borderColor = tc.gridColor;
+  Chart.defaults.font.family = "'Outfit', sans-serif";
 
-// Cost per Quality (only paid models)
-const paidM = M.filter(m => m.cost > 0);
-new Chart(document.getElementById('costQualityChart'), {
-  type: 'bar', data: { labels: [...paidM.map(m => m.name), ...M.filter(m => m.cost === 0).map(m => m.name)],
-    datasets: [{ data: [...paidM.map(m => +(m.cost / m.quality).toFixed(4)), ...M.filter(m => m.cost === 0).map(() => 0)],
-      backgroundColor: [...paidM.map(m => m.color + '66'), ...M.filter(m => m.cost === 0).map(m => m.color + '22')],
-      borderColor: [...paidM.map(m => m.color), ...M.filter(m => m.cost === 0).map(m => m.color + '44')],
-      borderWidth: 1.5, borderRadius: 6 }] },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y === 0 ? 'Free' : '$' + c.parsed.y.toFixed(4) + '/point' } } },
-    scales: { y: { title: { display: true, text: '$/quality point' }, grid: { color: '#1e2a3f44' } }, x: { grid: { display: false } } } }
-});
+  // TTFT
+  chartInstances.ttft = new Chart(document.getElementById('ttftChart'), {
+    type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.ttft), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(1) + 's' } } }, scales: { x: { title: { display: true, text: 'Seconds' }, grid: { color: tc.gridColor } }, y: { grid: { display: false } } } }
+  });
 
-// Quality vs Speed scatter
-new Chart(document.getElementById('qualitySpeedChart'), {
-  type: 'bubble', data: { datasets: M.map(m => ({ label: m.name, data: [{ x: m.tps, y: m.quality, r: Math.sqrt(m.tokens) / 10 }], backgroundColor: m.color + '55', borderColor: m.color, borderWidth: 2 })) },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } }, tooltip: { callbacks: { label: c => [c.dataset.label, `Speed: ${c.raw.x} tok/s`, `Quality: ${c.raw.y}/10`] } } },
-    scales: { x: { title: { display: true, text: 'Tokens/sec (log)' }, type: 'logarithmic', grid: { color: '#1e2a3f44' } }, y: { title: { display: true, text: 'Quality Score' }, min: 4, max: 10, grid: { color: '#1e2a3f44' } } } }
-});
+  // Response Time
+  chartInstances.responseTime = new Chart(document.getElementById('responseTimeChart'), {
+    type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.totalTime), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(1) + 's' } } }, scales: { x: { title: { display: true, text: 'Seconds' }, grid: { color: tc.gridColor } }, y: { grid: { display: false } } } }
+  });
 
-// Radar
-new Chart(document.getElementById('radarChart'), {
-  type: 'radar', data: { labels: CAT_REORDERED.map(c => c.label), datasets: M.map((m, i) => ({ label: m.name, data: CAT_REORDERED.map(c => c.data[i]), borderColor: m.color, backgroundColor: m.color + '12', borderWidth: 2, pointRadius: 3, pointBackgroundColor: m.color, pointBorderColor: '#060a14', pointBorderWidth: 1.5 })) },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } } }, scales: { r: { min: 0, max: 10, grid: { color: '#1e2a3f' }, angleLines: { color: '#1e2a3f' }, pointLabels: { font: { size: 10 }, color: '#8b9ec2' }, ticks: { display: false } } } }
-});
+  // Quality Bar
+  chartInstances.qualityBar = new Chart(document.getElementById('qualityBarChart'), {
+    type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.quality), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(2) + '/10' } } }, scales: { x: { min: 0, max: 10, title: { display: true, text: 'Score (1-10)' }, grid: { color: tc.gridColor } }, y: { grid: { display: false } } } }
+  });
 
-// Speed bars
+  // Cost per Quality
+  const paidM = M.filter(m => m.cost > 0);
+  chartInstances.costQuality = new Chart(document.getElementById('costQualityChart'), {
+    type: 'bar', data: { labels: [...paidM.map(m => m.name), ...M.filter(m => m.cost === 0).map(m => m.name)],
+      datasets: [{ data: [...paidM.map(m => +(m.cost / m.quality).toFixed(4)), ...M.filter(m => m.cost === 0).map(() => 0)],
+        backgroundColor: [...paidM.map(m => m.color + '66'), ...M.filter(m => m.cost === 0).map(m => m.color + '22')],
+        borderColor: [...paidM.map(m => m.color), ...M.filter(m => m.cost === 0).map(m => m.color + '44')],
+        borderWidth: 1.5, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y === 0 ? 'Free' : '$' + c.parsed.y.toFixed(4) + '/point' } } },
+      scales: { y: { title: { display: true, text: '$/quality point' }, grid: { color: tc.gridColor } }, x: { grid: { display: false } } } }
+  });
+
+  // Quality vs Speed bubble
+  chartInstances.qualitySpeed = new Chart(document.getElementById('qualitySpeedChart'), {
+    type: 'bubble', data: { datasets: M.map(m => ({ label: m.name, data: [{ x: m.tps, y: m.quality, r: Math.sqrt(m.tokens) / 10 }], backgroundColor: m.color + '55', borderColor: m.color, borderWidth: 2 })) },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } }, tooltip: { callbacks: { label: c => [c.dataset.label, 'Speed: ' + c.raw.x + ' tok/s', 'Quality: ' + c.raw.y + '/10'] } } },
+      scales: { x: { title: { display: true, text: 'Tokens/sec (log)' }, type: 'logarithmic', grid: { color: tc.gridColor } }, y: { title: { display: true, text: 'Quality Score' }, min: 4, max: 10, grid: { color: tc.gridColor } } } }
+  });
+
+  // Radar
+  chartInstances.radar = new Chart(document.getElementById('radarChart'), {
+    type: 'radar', data: { labels: CAT_REORDERED.map(c => c.label), datasets: M.map((m, i) => ({ label: m.name, data: CAT_REORDERED.map(c => c.data[i]), borderColor: m.color, backgroundColor: m.color + '12', borderWidth: 2, pointRadius: 3, pointBackgroundColor: m.color, pointBorderColor: tc.bgDeep, pointBorderWidth: 1.5 })) },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } } }, scales: { r: { min: 0, max: 10, grid: { color: tc.gridColor.replace('44','') }, angleLines: { color: tc.gridColor.replace('44','') }, pointLabels: { font: { size: 10 }, color: tc.textColor }, ticks: { display: false } } } }
+  });
+}
+
+// Speed bars (static -- don't need recreation, colors are inline)
 const sb = document.getElementById('speedBars');
 const maxTps = Math.max(...M.map(m => m.tps));
 M.forEach(m => {
   const pct = (m.tps / maxTps * 100).toFixed(1);
-  sb.innerHTML += `<div class="speed-bar-row"><div class="speed-bar-name" style="color:${m.color}">${m.name}</div><div class="speed-bar-track"><div class="speed-bar-fill" style="background:${m.color}44;border:1px solid ${m.color};--target:${pct}%"></div></div><div class="speed-bar-value" style="color:${m.color}">${m.tps}</div></div>`;
+  sb.innerHTML += '<div class="speed-bar-row"><div class="speed-bar-name" style="color:' + m.color + '">' + m.name + '</div><div class="speed-bar-track"><div class="speed-bar-fill" style="background:' + m.color + '44;border:1px solid ' + m.color + ';--target:' + pct + '%"></div></div><div class="speed-bar-value" style="color:' + m.color + '">' + m.tps + '</div></div>';
 });
 
-// Heatmap
+// Heatmap (static)
 const hm = document.getElementById('heatmap');
 hm.innerHTML = '<div class="heatmap-header cat-label">Category</div>';
-M.forEach(m => { hm.innerHTML += `<div class="heatmap-header" style="color:${m.color};font-size:9px">${m.name.replace('Claude ','').replace(':14b','')}</div>`; });
+M.forEach(m => { hm.innerHTML += '<div class="heatmap-header" style="color:' + m.color + ';font-size:9px">' + m.name.replace('Claude ','').replace(':14b','') + '</div>'; });
 CAT_REORDERED.forEach(cat => {
-  hm.innerHTML += `<div class="heatmap-cat">${cat.label}</div>`;
+  hm.innerHTML += '<div class="heatmap-cat">' + cat.label + '</div>';
   cat.data.forEach((val, i) => {
     const green = Math.max(0, (val - 1) / 9);
-    const bg = val <= 2 ? 'rgba(244,63,94,0.2)' : `rgba(16,185,129,${green * 0.4})`;
+    const bg = val <= 2 ? 'rgba(244,63,94,0.2)' : 'rgba(16,185,129,' + (green * 0.4) + ')';
     const clr = val <= 2 ? '#f43f5e' : val >= 8 ? '#10b981' : '#f0f4f8';
-    hm.innerHTML += `<div class="heatmap-cell" style="background:${bg};color:${clr}">${val.toFixed(1)}</div>`;
+    hm.innerHTML += '<div class="heatmap-cell" style="background:' + bg + ';color:' + clr + '">' + val.toFixed(1) + '</div>';
   });
 });
 
@@ -514,8 +594,11 @@ CAT_REORDERED.forEach(cat => {
 const tb = document.getElementById('compTableBody');
 M.sort((a, b) => b.quality - a.quality).forEach(m => {
   const qClass = m.quality >= 8 ? 'quality-high' : m.quality >= 6.5 ? 'quality-mid' : 'quality-low';
-  tb.innerHTML += `<tr><td class="model-name-cell" style="color:${m.color}">${m.name}</td><td>${m.type}</td><td>${m.tps}</td><td>${m.ttft}s</td><td>${m.totalTime}s</td><td><span class="quality-badge ${qClass}">${m.quality.toFixed(2)}</span></td><td>${m.tokens.toLocaleString()}</td><td>${m.cost > 0 ? '$' + m.cost.toFixed(2) : 'Free'}</td></tr>`;
+  tb.innerHTML += '<tr><td class="model-name-cell" style="color:' + m.color + '">' + m.name + '</td><td>' + m.type + '</td><td>' + m.tps + '</td><td>' + m.ttft + 's</td><td>' + m.totalTime + 's</td><td><span class="quality-badge ' + qClass + '">' + m.quality.toFixed(2) + '</span></td><td>' + m.tokens.toLocaleString() + '</td><td>' + (m.cost > 0 ? '$' + m.cost.toFixed(2) : 'Free') + '</td></tr>';
 });
+
+// Create charts initially
+createAllCharts();
 
 // Scroll animations
 const obs = new IntersectionObserver(entries => {
@@ -529,6 +612,34 @@ const obs = new IntersectionObserver(entries => {
   });
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Theme switching
+function setTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+  localStorage.setItem('llm-theme', theme);
+  updateThemeButtons(theme);
+  // Recreate charts with new theme colors after a brief delay for CSS to apply
+  setTimeout(createAllCharts, 50);
+}
+
+function updateThemeButtons(active) {
+  document.querySelectorAll('[data-theme-btn]').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-theme-btn') === active;
+    btn.style.background = isActive ? 'var(--accent)' : 'transparent';
+    btn.style.color = isActive ? 'var(--bg-deep)' : 'var(--text-secondary)';
+    btn.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+  });
+}
+
+// Initialize theme buttons
+(function() {
+  var t = localStorage.getItem('llm-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  updateThemeButtons(t);
+})();
 </script>
 </body>
 </html>
