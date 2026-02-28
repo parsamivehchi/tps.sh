@@ -274,7 +274,7 @@ footer a:hover { text-decoration: underline; }
 /* Speed bars (reused from index) */
 .speed-bars { display: flex; flex-direction: column; gap: 14px; }
 .speed-bar-row { display: grid; grid-template-columns: 200px 1fr 80px; align-items: center; gap: 14px; }
-@media (max-width: 560px) { .speed-bar-row { grid-template-columns: 120px 1fr 60px; } }
+/* Speed bar responsive handled in consolidated mobile section below */
 .speed-bar-name { font-weight: 600; font-size: 15px; }
 .speed-bar-track { height: 28px; background: var(--bg-surface); border-radius: 8px; overflow: hidden; }
 .speed-bar-fill { height: 100%; border-radius: 8px; width: 0; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
@@ -306,6 +306,281 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
 
 /* Theme overrides for inline-styled sections */
 [data-theme="light"] section[style] { background: var(--bg-surface) !important; }
+
+/* ============================================================
+   MOBILE NAV HAMBURGER
+   ============================================================ */
+.nav-toggle { display: none; background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 20px; line-height: 1; transition: color 0.2s, border-color 0.2s; z-index: 101; }
+.nav-toggle:hover { color: var(--text-primary); border-color: var(--accent); }
+
+/* ============================================================
+   TABLE SCROLL WRAPPER (applied via JS for any tables)
+   ============================================================ */
+.table-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ============================================================
+   CONSOLIDATED MOBILE RESPONSIVE STYLES
+   ============================================================ */
+
+/* --- Tablet breakpoint: 768px --- */
+@media (max-width: 768px) {
+  /* Nav: hamburger mode */
+  .nav-toggle { display: block; }
+  nav .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 0;
+    z-index: 100;
+  }
+  nav .nav-links.open { display: flex; }
+  nav .nav-links a {
+    padding: 12px 24px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+  }
+  nav .nav-links a:last-of-type { border-bottom: none; }
+  nav .nav-links a.back-link {
+    margin: 8px 16px;
+    width: auto;
+    text-align: center;
+    border-bottom: none;
+  }
+  nav .nav-links > div[style] {
+    /* theme buttons row */
+    justify-content: center;
+    padding: 12px 16px;
+    margin-left: 0 !important;
+  }
+  nav { padding: 10px 0; }
+
+  /* Hero */
+  .hero { padding: 64px 0 48px; }
+  .hero h1 { font-size: clamp(28px, 7vw, 44px); letter-spacing: -1px; }
+  .hero .subtitle { font-size: 16px; }
+  .hero .subtitle-desc { font-size: 14px; margin-bottom: 28px; }
+  .hero .meta-row { gap: 16px; }
+  .hero .meta-item { font-size: 11px; }
+  .hero .badge { font-size: 11px; padding: 5px 12px; margin-bottom: 20px; }
+
+  /* Section sizing */
+  section { padding: 48px 0; }
+  .container { padding: 0 16px; }
+  .section-title { font-size: 24px; letter-spacing: -0.5px; }
+  .section-desc { font-size: 15px; margin-bottom: 32px; }
+  .section-label { font-size: 12px; letter-spacing: 2px; }
+
+  /* Chart heights */
+  .chart-wrap { height: 260px; }
+  .chart-wrap.tall { height: 320px; }
+  .chart-wrap.short { height: 220px; }
+
+  /* Chart cards */
+  .chart-card { padding: 20px; }
+  .chart-card h3 { font-size: 15px; }
+  .chart-card .chart-desc { font-size: 13px; margin-bottom: 14px; }
+
+  /* Cards */
+  .card { padding: 20px; }
+  .card h3 { font-size: 15px; }
+  .card .card-desc { font-size: 13px; margin-bottom: 14px; }
+
+  /* Calculator */
+  .calc-result .result-value { font-size: 42px; }
+  .calc-result .result-unit { font-size: 15px; }
+  .calc-result { padding: 24px 16px; }
+  .slider-label span:first-child { font-size: 14px; }
+  .slider-label .slider-value { font-size: 16px; }
+  input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
+  input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; }
+
+  /* Speed bars */
+  .speed-bar-row { grid-template-columns: 1fr; gap: 4px; }
+  .speed-bar-name { font-size: 14px; }
+  .speed-bar-value { text-align: left; font-size: 14px; }
+
+  /* Hardware cards */
+  .hw-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .hw-card { padding: 18px; }
+  .hw-card .hw-name { font-size: 15px; }
+  .hw-card .hw-stat-value { font-size: 14px; }
+  .hw-card .tps-bar-fill { font-size: 10px; }
+
+  /* Model fit */
+  .fit-item .fit-tps { font-size: 18px; }
+
+  /* Cluster stats */
+  .cluster-stat .cs-value { font-size: 18px; }
+
+  /* Cost grid */
+  .cost-row .cost-name { font-size: 13px; }
+  .cost-row .cost-val { font-size: 13px; }
+
+  /* Insight cards */
+  .insight-card { padding: 20px; }
+  .insight-card h4 { font-size: 15px; }
+  .insight-card p { font-size: 14px; }
+  .insight-card .ic-icon { font-size: 24px; margin-bottom: 8px; }
+
+  /* Decision */
+  .rec-box { padding: 20px; }
+  .rec-box .rec-title { font-size: 18px; }
+  .rec-box .rec-reason { font-size: 13px; }
+  .rec-box .rec-specs { gap: 14px; }
+  .rec-box .rec-spec { font-size: 12px; }
+
+  /* Context bridge */
+  .context-card { padding: 24px 20px; }
+  .context-title { font-size: 18px; }
+  .context-copy { font-size: 13px; }
+  .context-metric .cm-value { font-size: 22px; }
+  .context-metric .cm-label { font-size: 11px; }
+
+  /* Phase indicator */
+  .phase-indicator { gap: 6px; padding: 10px 16px; }
+  .phase-pill { font-size: 10px; padding: 3px 10px; }
+
+  /* Formula */
+  .formula { font-size: clamp(12px, 2.2vw, 18px); }
+  .formula-box { padding: 16px; }
+
+  /* Pipe analogy */
+  .pipe-item .pipe-value { font-size: 14px; }
+  .pipe-item .pipe-desc { font-size: 12px; }
+
+  /* Validation box */
+  .validation-box { padding: 12px; }
+  .validation-box .vb-row { font-size: 12px; flex-wrap: wrap; gap: 2px; }
+
+  /* Footer */
+  footer { padding: 28px 0; }
+  footer p { font-size: 12px; }
+}
+
+/* --- Small phone breakpoint: 480px --- */
+@media (max-width: 480px) {
+  /* Hero */
+  .hero { padding: 48px 0 36px; }
+  .hero h1 { font-size: clamp(24px, 8vw, 36px); letter-spacing: -0.5px; }
+  .hero .subtitle { font-size: 14px; }
+  .hero .subtitle-desc { font-size: 13px; margin-bottom: 20px; }
+  .hero .meta-row { flex-direction: column; align-items: center; gap: 8px; }
+  .hero .badge { font-size: 10px; padding: 4px 10px; }
+
+  /* Section sizing */
+  section { padding: 36px 0; }
+  .container { padding: 0 12px; }
+  .section-title { font-size: 20px; }
+  .section-desc { font-size: 14px; margin-bottom: 24px; }
+
+  /* Chart heights */
+  .chart-wrap { height: 220px; }
+  .chart-wrap.tall { height: 260px; }
+  .chart-wrap.short { height: 180px; }
+  .chart-card { padding: 14px; }
+
+  /* Cards */
+  .card { padding: 16px; }
+
+  /* Hardware grid: single column */
+  .hw-grid { grid-template-columns: 1fr; }
+  .hw-card .hw-name { font-size: 14px; }
+  .hw-card .hw-chip { font-size: 11px; }
+
+  /* Calculator result */
+  .calc-result .result-value { font-size: 36px; }
+  .calc-result .result-unit { font-size: 14px; }
+  .calc-result { padding: 20px 12px; }
+  .slider-group { margin-bottom: 18px; }
+  input[type="range"] { height: 8px; }
+  input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; }
+  input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; }
+
+  /* Speed bars: stacked layout */
+  .speed-bar-row { grid-template-columns: 1fr; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .speed-bar-name { font-size: 13px; }
+  .speed-bar-track { height: 22px; }
+  .speed-bar-value { font-size: 13px; }
+
+  /* Cluster stats: 1 column */
+  .cluster-stats { grid-template-columns: 1fr; }
+  .cluster-stat .cs-value { font-size: 16px; }
+  .cluster-stat { padding: 12px; }
+
+  /* Context metrics: 1 column */
+  .context-metrics { grid-template-columns: 1fr; }
+  .context-card { padding: 18px 14px; }
+  .context-title { font-size: 16px; }
+
+  /* Cost rows */
+  .cost-row { flex-direction: column; gap: 2px; padding: 8px 0; }
+  .cost-row .cost-name { font-size: 12px; }
+  .cost-row .cost-val { font-size: 12px; }
+  .cost-grid { gap: 16px; }
+
+  /* Insight cards */
+  .insight-card { padding: 16px; }
+  .insight-card h4 { font-size: 14px; }
+  .insight-card p { font-size: 13px; }
+
+  /* Decision */
+  .decision-controls select { padding: 12px 14px; font-size: 15px; }
+  .rec-box { padding: 16px; }
+  .rec-box .rec-title { font-size: 16px; }
+  .rec-box .rec-reason { font-size: 12px; }
+  .rec-box .rec-specs { flex-direction: column; align-items: center; gap: 8px; }
+
+  /* Formula */
+  .formula-box { padding: 12px; margin: 16px 0; }
+  .formula { font-size: 12px; word-break: break-word; }
+  .formula-note { font-size: 11px; }
+
+  /* Pipe */
+  .pipe-item { padding: 14px; }
+  .pipe-item .pipe-label { font-size: 11px; }
+  .pipe-item .pipe-value { font-size: 13px; }
+  .pipe-item .pipe-desc { font-size: 11px; }
+
+  /* Phase pills */
+  .phase-indicator { padding: 8px 12px; }
+  .phase-pill { font-size: 9px; padding: 3px 8px; }
+
+  /* Fit items */
+  .fit-item { padding: 14px; }
+  .fit-item .fit-hw { font-size: 14px; }
+  .fit-item .fit-tps { font-size: 16px; }
+  .fit-controls select { padding: 12px 14px; font-size: 15px; }
+
+  /* Validation box rows stacked */
+  .validation-box .vb-row { flex-direction: column; gap: 0; }
+
+  /* Context arrow */
+  .context-arrow { font-size: 13px; padding: 12px 14px; }
+
+  /* Footer */
+  footer { padding: 20px 0; }
+  footer p { font-size: 11px; }
+}
+
+/* --- Extra small screens: 360px --- */
+@media (max-width: 360px) {
+  .hero h1 { font-size: 22px; }
+  .section-title { font-size: 18px; }
+  .container { padding: 0 10px; }
+  .chart-wrap { height: 200px; }
+  .chart-wrap.tall { height: 240px; }
+  .calc-result .result-value { font-size: 30px; }
+  .hw-card { padding: 14px; }
+  .context-card { padding: 14px 10px; }
+}
 </style>
 <script>
 (function(){
@@ -325,6 +600,7 @@ a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--ac
 <nav>
   <div class="container">
     <div class="logo">TPS<span>.</span>SH</div>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open'); this.textContent = this.textContent === '\u2630' ? '\u2715' : '\u2630';" aria-label="Toggle navigation">&#x2630;</button>
     <div class="nav-links">
       <a href="#bandwidth">Bandwidth</a>
       <a href="#calculator">Calculator</a>
@@ -1269,6 +1545,36 @@ function updateThemeButtons(active) {
 (function() {
   var t = localStorage.getItem('llm-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   updateThemeButtons(t);
+})();
+
+// ============================================================
+// MOBILE NAV: Close menu on link click
+// ============================================================
+(function() {
+  var navLinks = document.querySelector('.nav-links');
+  var toggle = document.querySelector('.nav-toggle');
+  if (navLinks && toggle) {
+    navLinks.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        navLinks.classList.remove('open');
+        toggle.textContent = '\u2630';
+      });
+    });
+  }
+})();
+
+// ============================================================
+// MOBILE: Wrap tables in horizontal scroll containers
+// ============================================================
+(function() {
+  document.querySelectorAll('table').forEach(function(table) {
+    if (!table.parentElement.classList.contains('table-scroll-wrap')) {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'table-scroll-wrap';
+      table.parentElement.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    }
+  });
 })();
 </script>
 </body>

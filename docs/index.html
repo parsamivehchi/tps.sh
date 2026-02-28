@@ -644,19 +644,96 @@ body::after {
 .hamburger {
   display: none;
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   z-index: 200;
   background: var(--card-bg);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 8px 12px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.8rem;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 6px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease;
 }
 
-/* Responsive */
+.hamburger:active {
+  background: var(--overlay-white);
+}
+
+.hamburger-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 1px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hamburger.active .hamburger-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger.active .hamburger-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active .hamburger-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Sidebar overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-overlay.visible {
+  display: block;
+  opacity: 1;
+}
+
+/* Mobile theme switcher (shown in top bar when sidebar is collapsed) */
+.mobile-theme-bar {
+  display: none;
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 150;
+  gap: 4px;
+  align-items: center;
+}
+
+.mobile-theme-bar button {
+  all: unset;
+  cursor: pointer;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.65rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s;
+}
+
+/* Responsive: Tablet / small desktop (900px) */
 @media (max-width: 900px) {
   .sidebar {
     transform: translateX(-100%);
@@ -664,19 +741,143 @@ body::after {
   }
   .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; }
-  .hamburger { display: block; }
-  .section, .hero { padding: 60px 24px; }
+  .hamburger { display: flex; }
+  .mobile-theme-bar { display: flex; }
+  .section { padding: 60px 24px; }
+  .hero { padding: 80px 24px 60px; padding-top: 80px; }
   .footer { padding: 32px 24px; }
   .card-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+
+  /* Architecture pipeline: force 2 cols on tablet */
+  .section#architecture .card-grid[style*="repeat(4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
+/* Responsive: Mobile (600px) */
 @media (max-width: 600px) {
-  .hero h1 { font-size: 1.8rem; }
+  .hero { padding: 72px 16px 48px; }
+  .hero h1 { font-size: 1.8rem; letter-spacing: -0.5px; }
+  .hero-tagline { font-size: 0.85rem; word-break: break-word; }
   .hero-meta { flex-direction: column; gap: 8px; }
-  .card-grid, .card-grid.cols-2, .card-grid.cols-3 { grid-template-columns: 1fr; }
+  .meta-badge { font-size: 0.7rem; padding: 6px 12px; min-height: 44px; display: flex; align-items: center; }
+
+  .section { padding: 48px 16px; }
+  .section-title { font-size: 1.3rem; }
+  .section-desc { font-size: 0.8rem; margin-bottom: 28px; }
+
+  /* Card grids: single column */
+  .card-grid,
+  .card-grid.cols-2,
+  .card-grid.cols-3,
+  .section#architecture .card-grid[style*="repeat(4"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card { padding: 20px; }
+  .card h3 { font-size: 0.9rem; }
+  .card .card-desc { font-size: 0.8rem; }
+
+  .finding-card { padding: 20px; }
+  .finding-card h4 { font-size: 0.85rem; }
+  .finding-card p { font-size: 0.8rem; }
+
+  .cat-card { padding: 16px; min-height: 44px; }
+
   .tech-grid { grid-template-columns: repeat(2, 1fr); }
-  .cli-line { flex-wrap: wrap; }
-  .cli-comment { margin-left: 0; }
+  .tech-item { padding: 14px 10px; min-height: 44px; }
+
+  /* CLI section: wrap and scroll */
+  .cli-block { padding: 16px; }
+  .cli-line { flex-wrap: wrap; font-size: 0.8rem; gap: 8px; }
+  .cli-cmd { white-space: normal; word-break: break-all; }
+  .cli-comment { margin-left: 0; font-size: 0.65rem; flex-basis: 100%; }
+
+  /* Tables: horizontal scroll already handled by .results-table-wrap */
+  .results-table { font-size: 0.75rem; }
+  .results-table thead th { padding: 10px 12px; font-size: 0.65rem; }
+  .results-table tbody td { padding: 10px 12px; }
+
+  /* Footer: stack vertically */
+  .footer { padding: 28px 16px; }
+  .footer p { font-size: 0.65rem; }
+  .footer .footer-stats { font-size: 0.6rem; }
+
+  /* Sidebar nav touch targets */
+  .sidebar-nav a { padding: 12px 12px; min-height: 44px; display: flex; align-items: center; }
+
+  /* Sidebar footer touch targets */
+  .sidebar-footer a { padding: 8px 4px; min-height: 44px; }
+
+  /* Pre/code overflow protection */
+  pre, code {
+    overflow-x: auto;
+    max-width: 100%;
+    word-break: break-word;
+  }
+}
+
+/* Responsive: Very small phones (480px) */
+@media (max-width: 480px) {
+  .hero { padding: 68px 12px 40px; }
+  .hero h1 { font-size: 1.6rem; }
+  .hero-tagline { font-size: 0.8rem; min-height: 1.4em; }
+  .hero-badge { font-size: 0.6rem; padding: 5px 10px; }
+
+  .section { padding: 40px 12px; }
+  .section-label { font-size: 0.65rem; letter-spacing: 2px; }
+  .section-title { font-size: 1.15rem; }
+  .section-desc { font-size: 0.75rem; }
+
+  .card { padding: 16px; }
+  .card-icon { font-size: 1.2rem; margin-bottom: 8px; }
+  .card h3 { font-size: 0.85rem; }
+  .card .card-desc { font-size: 0.75rem; }
+
+  .finding-card { padding: 16px; }
+  .finding-card h4 { font-size: 0.8rem; }
+  .finding-card p { font-size: 0.75rem; }
+
+  .cat-card { padding: 14px; }
+  .cat-card .cat-prefix { font-size: 0.6rem; }
+  .cat-card h4 { font-size: 0.8rem; }
+
+  .tech-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .tech-item { padding: 12px 8px; }
+  .tech-item .tech-name { font-size: 0.8rem; }
+  .tech-item .tech-role { font-size: 0.6rem; }
+
+  .cli-block { padding: 12px; }
+  .cli-line { font-size: 0.73rem; padding: 5px 0; }
+  .cli-cmd { font-size: 0.73rem; }
+  .cli-comment { font-size: 0.6rem; }
+
+  .results-table { font-size: 0.7rem; }
+  .results-table thead th { padding: 8px 10px; font-size: 0.6rem; letter-spacing: 1px; }
+  .results-table tbody td { padding: 8px 10px; }
+
+  .footer { padding: 24px 12px; }
+
+  /* Mobile theme bar tighter */
+  .mobile-theme-bar button { width: 32px; height: 32px; font-size: 0.6rem; }
+
+  .hamburger { width: 44px; height: 44px; top: 10px; left: 10px; }
+}
+
+/* Responsive: Ultra-small screens (< 400px) */
+@media (max-width: 400px) {
+  .hero h1 { font-size: 1.4rem; }
+  .hero-tagline { font-size: 0.73rem; }
+  .section-title { font-size: 1.05rem; }
+  .section-desc { font-size: 0.7rem; }
+  .card h3 { font-size: 0.8rem; }
+  .card .card-desc { font-size: 0.7rem; }
+  .finding-card h4 { font-size: 0.75rem; }
+  .finding-card p { font-size: 0.7rem; }
+  .tech-item .tech-name { font-size: 0.73rem; }
+  .cli-line { font-size: 0.68rem; }
+  .cli-cmd { font-size: 0.68rem; }
+  body { font-size: 0.9rem; }
 }
 </style>
 <script>
@@ -690,7 +891,19 @@ body::after {
 <body>
 
 <!-- Sidebar -->
-<button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle navigation">[=]</button>
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">
+  <span class="hamburger-bar"></span>
+  <span class="hamburger-bar"></span>
+  <span class="hamburger-bar"></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="mobile-theme-bar" id="mobileThemeBar">
+  <button onclick="setTheme('dark')" title="Dark" data-theme-btn-m="dark">D</button>
+  <button onclick="setTheme('light')" title="Light" data-theme-btn-m="light">L</button>
+  <button onclick="setTheme('neon')" title="Neon" data-theme-btn-m="neon">N</button>
+  <button onclick="setTheme('solarized')" title="Solarized" data-theme-btn-m="solarized">S</button>
+</div>
 
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-logo">TPS<span class="accent">.</span>SH</div>
@@ -1134,12 +1347,46 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
+// Sidebar toggle with overlay
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  var hamburger = document.querySelector('.hamburger');
+  var isOpen = sidebar.classList.contains('open');
+
+  if (isOpen) {
+    closeSidebar();
+  } else {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+    hamburger.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
 // Close sidebar on mobile nav click
 function closeSidebar() {
   if (window.innerWidth <= 900) {
-    document.querySelector('.sidebar').classList.remove('open');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    var hamburger = document.querySelector('.hamburger');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+    hamburger.classList.remove('active');
+    document.body.style.overflow = '';
   }
 }
+
+// Close sidebar on resize to desktop
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 900) {
+    var overlay = document.getElementById('sidebarOverlay');
+    var hamburger = document.querySelector('.hamburger');
+    overlay.classList.remove('visible');
+    hamburger.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+});
 
 // Theme switching
 function setTheme(theme) {
@@ -1153,8 +1400,16 @@ function setTheme(theme) {
 }
 
 function updateThemeButtons(active) {
-  document.querySelectorAll('[data-theme-btn]').forEach(btn => {
-    const isActive = btn.getAttribute('data-theme-btn') === active;
+  // Sidebar theme buttons
+  document.querySelectorAll('[data-theme-btn]').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-theme-btn') === active;
+    btn.style.background = isActive ? 'var(--neon-blue)' : 'transparent';
+    btn.style.color = isActive ? 'var(--bg)' : 'var(--text-dim)';
+    btn.style.borderColor = isActive ? 'var(--neon-blue)' : 'var(--border)';
+  });
+  // Mobile theme bar buttons
+  document.querySelectorAll('[data-theme-btn-m]').forEach(function(btn) {
+    var isActive = btn.getAttribute('data-theme-btn-m') === active;
     btn.style.background = isActive ? 'var(--neon-blue)' : 'transparent';
     btn.style.color = isActive ? 'var(--bg)' : 'var(--text-dim)';
     btn.style.borderColor = isActive ? 'var(--neon-blue)' : 'var(--border)';
