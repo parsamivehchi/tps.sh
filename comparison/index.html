@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM-Bench — Local vs Cloud Showdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-deep: #060a14;
+  --bg-card: #0d1321;
+  --bg-surface: #161e2e;
+  --border: #1e2a3f;
+  --border-glow: #1e3a5f;
+  --text-primary: #f0f4f8;
+  --text-secondary: #8b9ec2;
+  --text-muted: #4a5e82;
+  --qwen3: #10b981; --qwen25: #3b82f6;
+  --haiku: #06b6d4; --sonnet: #8b5cf6; --opus: #ec4899;
+  --accent: #818cf8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #1e3a5f #060a14; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg-deep); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+body::before { content: ''; position: fixed; inset: 0; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; }
+.glow-orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.1; pointer-events: none; z-index: 0; }
+.glow-orb.emerald { width: 400px; height: 400px; background: #10b981; top: 5%; left: 10%; }
+.glow-orb.violet { width: 350px; height: 350px; background: #8b5cf6; top: 30%; right: 5%; }
+.glow-orb.cyan { width: 300px; height: 300px; background: #06b6d4; bottom: 20%; left: 20%; }
+.container { max-width: 1260px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+nav { position: sticky; top: 0; z-index: 100; background: rgba(6,10,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 14px 0; }
+nav .container { display: flex; align-items: center; justify-content: space-between; }
+nav .logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+nav .logo span { color: var(--qwen3); }
+nav .nav-links { display: flex; gap: 24px; }
+nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.2s; }
+nav .nav-links a:hover { color: var(--text-primary); }
+
+.hero { padding: 100px 0 80px; text-align: center; }
+.hero .badge { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 100px; padding: 6px 16px; font-size: 12px; color: var(--text-secondary); margin-bottom: 32px; font-family: 'IBM Plex Mono', monospace; }
+.hero .badge .dot { width: 6px; height: 6px; background: var(--qwen3); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.hero h1 { font-size: clamp(40px, 6vw, 68px); font-weight: 900; letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px; background: linear-gradient(135deg, #f0f4f8 20%, #8b5cf6 50%, #06b6d4 80%, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero .subtitle { font-size: 18px; color: var(--text-secondary); max-width: 640px; margin: 0 auto 40px; font-weight: 300; }
+.hero .meta-row { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; }
+.hero .meta-item { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.hero .meta-item strong { color: var(--text-secondary); font-weight: 600; }
+
+section { padding: 80px 0; }
+.section-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.section-title { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 12px; }
+.section-desc { color: var(--text-secondary); font-size: 15px; max-width: 640px; margin-bottom: 48px; }
+
+.group-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; padding-left: 4px; }
+.model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.model-grid.three { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1000px) { .model-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .model-grid, .model-grid.three { grid-template-columns: 1fr; } }
+
+.model-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; position: relative; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+.model-card:hover { transform: translateY(-3px); }
+.model-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.model-card .crown { position: absolute; top: 10px; right: 12px; font-size: 18px; }
+.model-card .name { font-weight: 700; font-size: 15px; margin-bottom: 1px; }
+.model-card .arch { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.model-card .stats { display: flex; flex-direction: column; gap: 10px; }
+.model-card .stat-row { display: flex; justify-content: space-between; align-items: baseline; }
+.model-card .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.model-card .stat-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 16px; }
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
+.chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+.chart-card.full { grid-column: 1 / -1; }
+.chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.chart-card .chart-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+.chart-wrap { position: relative; height: 340px; }
+.chart-wrap.tall { height: 420px; }
+
+.speed-bars { display: flex; flex-direction: column; gap: 14px; }
+.speed-bar-row { display: grid; grid-template-columns: 170px 1fr 80px; align-items: center; gap: 14px; }
+.speed-bar-name { font-weight: 600; font-size: 13px; }
+.speed-bar-track { height: 28px; background: var(--bg-surface); border-radius: 8px; overflow: hidden; }
+.speed-bar-fill { height: 100%; border-radius: 8px; width: 0; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
+.speed-bar-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15)); border-radius: 0 8px 8px 0; }
+.speed-bar-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 15px; text-align: right; }
+
+.heatmap-grid { display: grid; grid-template-columns: 170px repeat(5, 1fr); gap: 2px; font-size: 12px; }
+.heatmap-header { background: var(--bg-surface); padding: 8px 6px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-secondary); text-align: center; border-radius: 4px; }
+.heatmap-header.cat-label { text-align: left; padding-left: 10px; }
+.heatmap-cell { padding: 12px 6px; text-align: center; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 12px; transition: transform 0.2s; cursor: default; }
+.heatmap-cell:hover { transform: scale(1.08); z-index: 2; }
+.heatmap-cat { padding: 12px 10px; background: var(--bg-surface); border-radius: 4px; font-weight: 500; color: var(--text-secondary); font-size: 12px; display: flex; align-items: center; }
+
+.comp-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.comp-table thead th { background: var(--bg-surface); padding: 10px 12px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+.comp-table thead th:first-child { border-radius: 8px 0 0 0; }
+.comp-table thead th:last-child { border-radius: 0 8px 0 0; }
+.comp-table tbody td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+.comp-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+.comp-table .model-name-cell { font-family: 'Outfit', sans-serif; font-weight: 600; }
+.comp-table .best { font-weight: 700; }
+
+.insight-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 768px) { .insight-cards { grid-template-columns: 1fr; } }
+.insight-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+.insight-card .emoji { font-size: 28px; margin-bottom: 12px; }
+.insight-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.insight-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+.quality-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+.quality-high { background: rgba(16,185,129,0.15); color: #10b981; }
+.quality-mid { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.quality-low { background: rgba(244,63,94,0.15); color: #f43f5e; }
+
+footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.counter { display: inline-block; }
+
+/* Phase indicator */
+.phase-indicator { display: flex; justify-content: center; gap: 8px; padding: 12px 0; background: var(--bg-deep); border-bottom: 1px solid var(--border); }
+.phase-pill { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.5px; padding: 4px 14px; border-radius: 100px; text-decoration: none; transition: all 0.2s; }
+.phase-pill.active { background: var(--accent); color: var(--bg-deep); font-weight: 600; }
+.phase-pill.inactive { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border); }
+a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--accent); }
+
+/* Nav next link */
+nav .nav-links a.next-link { color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 6px; }
+nav .nav-links a.next-link:hover { background: var(--accent); color: var(--bg-deep); }
+
+/* Bridge section */
+.bridge { padding: 80px 0; }
+.bridge-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; max-width: 800px; margin: 0 auto; position: relative; overflow: hidden; text-align: center; }
+.bridge-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #818cf8, #10b981, #06b6d4); }
+.bridge-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.bridge-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 28px; }
+.bridge-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 28px; flex-wrap: wrap; }
+.bridge-stat { text-align: center; }
+.bridge-stat .stat-num { font-family: 'IBM Plex Mono', monospace; font-size: 42px; font-weight: 800; line-height: 1; }
+.bridge-stat .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.bridge-copy { font-size: 15px; color: var(--text-secondary); max-width: 540px; margin: 0 auto 32px; line-height: 1.7; }
+.bridge-copy strong { color: var(--text-primary); }
+.bridge-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg-deep); font-weight: 600; font-size: 15px; padding: 12px 28px; border-radius: 10px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+.bridge-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(129,140,248,0.3); }
+
+/* Footer links */
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="glow-orb emerald"></div>
+<div class="glow-orb violet"></div>
+<div class="glow-orb cyan"></div>
+
+<nav>
+  <div class="container">
+    <div class="logo">LLM<span>.</span>Bench</div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#speed">Speed</a>
+      <a href="#quality">Quality</a>
+      <a href="#categories">Categories</a>
+      <a href="#deep-dive">Deep Dive</a>
+      <a href="#insights">Insights</a>
+      <a href="hardware.html" class="next-link">Hardware Guide &rarr;</a>
+    </div>
+  </div>
+</nav>
+
+<div class="phase-indicator">
+  <span class="phase-pill active">Phase 1: Benchmarks</span>
+  <a href="hardware.html" class="phase-pill inactive">Phase 2: Hardware Guide</a>
+</div>
+
+<section class="hero">
+  <div class="container">
+    <div class="badge"><span class="dot"></span>105 tests &bull; 5 models &bull; Quality scored</div>
+    <h1>Local vs Cloud<br>Model Showdown</h1>
+    <p class="subtitle">Five LLMs &mdash; 2 local Ollama + 3 Claude API &mdash; tested across 21 coding prompts on Apple M2 Max. Speed, quality, and cost compared.</p>
+    <div class="meta-row">
+      <div class="meta-item"><strong>Tests</strong> 105</div>
+      <div class="meta-item"><strong>Models</strong> 2 local + 3 cloud</div>
+      <div class="meta-item"><strong>Hardware</strong> M2 Max &bull; 32GB</div>
+      <div class="meta-item"><strong>API Cost</strong> $2.69</div>
+      <div class="meta-item"><strong>Quality Judge</strong> Claude Sonnet 4.6</div>
+    </div>
+  </div>
+</section>
+
+<section id="overview">
+  <div class="container">
+    <div class="section-label reveal">01 / Overview</div>
+    <h2 class="section-title reveal">The Five Contenders</h2>
+    <p class="section-desc reveal">Two free local models vs three paid Claude models. Is the cloud premium worth it?</p>
+
+    <div class="group-label reveal" style="color: var(--qwen3);">&#x2B24; Local Models (Free &bull; Ollama)</div>
+    <div class="model-grid three reveal" style="margin-bottom: 28px; grid-template-columns: repeat(2, 1fr);">
+      <div class="model-card" style="--c: var(--qwen3);"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--qwen3);"></div>
+        <div class="crown">&#x1F451;</div>
+        <div class="name" style="color:var(--qwen3)">qwen3-coder</div><div class="arch">30B MoE &bull; Free &bull; Offline</div>
+        <div class="stats">
+          <div class="stat-row"><span class="stat-label">Speed</span><span class="stat-value" style="color:var(--qwen3)">48.8 <small style="font-size:11px">tok/s</small></span></div>
+          <div class="stat-row"><span class="stat-label">Quality</span><span class="stat-value" style="color:var(--qwen3)">7.48</span></div>
+          <div class="stat-row"><span class="stat-label">TTFT</span><span class="stat-value" style="color:var(--qwen3)">1.1s</span></div>
+        </div>
+      </div>
+      <div class="model-card"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--qwen25);"></div>
+        <div class="name" style="color:var(--qwen25)">qwen2.5-coder:14b</div><div class="arch">14B Dense &bull; Free &bull; Offline</div>
+        <div class="stats">
+          <div class="stat-row"><span class="stat-label">Speed</span><span class="stat-value" style="color:var(--qwen25)">15.6 <small style="font-size:11px">tok/s</small></span></div>
+          <div class="stat-row"><span class="stat-label">Quality</span><span class="stat-value" style="color:var(--qwen25)">6.64</span></div>
+          <div class="stat-row"><span class="stat-label">TTFT</span><span class="stat-value" style="color:var(--qwen25)">1.5s</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-label reveal" style="color: var(--sonnet);">&#x2B24; Cloud Models (Paid &bull; Anthropic API)</div>
+    <div class="model-grid three reveal" style="margin-bottom: 48px;">
+      <div class="model-card"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--haiku);"></div>
+        <div class="crown">&#x26A1;</div>
+        <div class="name" style="color:var(--haiku)">Claude Haiku 4.5</div><div class="arch">Cloud &bull; $0.28</div>
+        <div class="stats">
+          <div class="stat-row"><span class="stat-label">Speed</span><span class="stat-value" style="color:var(--haiku)">169.7 <small style="font-size:11px">tok/s</small></span></div>
+          <div class="stat-row"><span class="stat-label">Quality</span><span class="stat-value" style="color:var(--haiku)">8.25</span></div>
+          <div class="stat-row"><span class="stat-label">TTFT</span><span class="stat-value" style="color:var(--haiku)">0.5s</span></div>
+        </div>
+      </div>
+      <div class="model-card"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--sonnet);"></div>
+        <div class="name" style="color:var(--sonnet)">Claude Sonnet 4.6</div><div class="arch">Cloud &bull; $0.93</div>
+        <div class="stats">
+          <div class="stat-row"><span class="stat-label">Speed</span><span class="stat-value" style="color:var(--sonnet)">77.7 <small style="font-size:11px">tok/s</small></span></div>
+          <div class="stat-row"><span class="stat-label">Quality</span><span class="stat-value" style="color:var(--sonnet)">8.59</span></div>
+          <div class="stat-row"><span class="stat-label">TTFT</span><span class="stat-value" style="color:var(--sonnet)">1.0s</span></div>
+        </div>
+      </div>
+      <div class="model-card"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--opus);"></div>
+        <div class="crown">&#x1F3C6;</div>
+        <div class="name" style="color:var(--opus)">Claude Opus 4.6</div><div class="arch">Cloud &bull; $1.48</div>
+        <div class="stats">
+          <div class="stat-row"><span class="stat-label">Speed</span><span class="stat-value" style="color:var(--opus)">76.6 <small style="font-size:11px">tok/s</small></span></div>
+          <div class="stat-row"><span class="stat-label">Quality</span><span class="stat-value" style="color:var(--opus)">8.65</span></div>
+          <div class="stat-row"><span class="stat-label">TTFT</span><span class="stat-value" style="color:var(--opus)">1.8s</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="speed" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">02 / Speed</div>
+    <h2 class="section-title reveal">Generation Speed</h2>
+    <p class="section-desc reveal">Tokens per second across all 21 prompts. Cloud models have a massive infrastructure advantage.</p>
+    <div class="chart-grid">
+      <div class="chart-card full reveal">
+        <h3>Tokens per Second</h3>
+        <div class="chart-desc">Average generation throughput &mdash; higher is better</div>
+        <div class="speed-bars" id="speedBars"></div>
+      </div>
+      <div class="chart-card reveal">
+        <h3>Time to First Token</h3>
+        <div class="chart-desc">How quickly each model starts responding</div>
+        <div class="chart-wrap"><canvas id="ttftChart"></canvas></div>
+      </div>
+      <div class="chart-card reveal">
+        <h3>Average Response Time</h3>
+        <div class="chart-desc">Total end-to-end seconds per prompt</div>
+        <div class="chart-wrap"><canvas id="responseTimeChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="quality">
+  <div class="container">
+    <div class="section-label reveal">03 / Quality</div>
+    <h2 class="section-title reveal">Output Quality Scores</h2>
+    <p class="section-desc reveal">Every output scored by Claude Sonnet on correctness (40%), completeness (35%), and clarity (25%). Claude self-scores are flagged for bias.</p>
+    <div class="chart-grid">
+      <div class="chart-card full reveal">
+        <h3>Quality vs Speed Trade-off</h3>
+        <div class="chart-desc">The holy grail: top-right corner = fast AND high quality. Bubble size = total tokens output.</div>
+        <div class="chart-wrap tall"><canvas id="qualitySpeedChart"></canvas></div>
+      </div>
+      <div class="chart-card reveal">
+        <h3>Quality Scores (Weighted)</h3>
+        <div class="chart-desc">Average quality score out of 10</div>
+        <div class="chart-wrap"><canvas id="qualityBarChart"></canvas></div>
+      </div>
+      <div class="chart-card reveal">
+        <h3>Cost per Quality Point</h3>
+        <div class="chart-desc">API cost divided by quality score &mdash; lower is better</div>
+        <div class="chart-wrap"><canvas id="costQualityChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="categories" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">04 / Categories</div>
+    <h2 class="section-title reveal">Performance by Task Type</h2>
+    <p class="section-desc reveal">Quality scores across 7 coding task categories. Where does each model shine?</p>
+    <div class="chart-card full reveal" style="margin-bottom: 24px; overflow-x: auto;">
+      <h3>Quality Heatmap &mdash; Score by Category</h3>
+      <div class="chart-desc">Color intensity = quality score. Green = high, red = low.</div>
+      <div class="heatmap-grid" id="heatmap"></div>
+    </div>
+    <div class="chart-card full reveal">
+      <h3>Category Quality Radar</h3>
+      <div class="chart-desc">Quality scores across all 7 task types per model</div>
+      <div class="chart-wrap tall"><canvas id="radarChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<section id="deep-dive">
+  <div class="container">
+    <div class="section-label reveal">05 / Full Data</div>
+    <h2 class="section-title reveal">Complete Comparison</h2>
+    <p class="section-desc reveal">Every metric, every model.</p>
+    <div class="chart-card full reveal" style="overflow-x: auto;">
+      <table class="comp-table">
+        <thead><tr>
+          <th>Model</th><th>Type</th><th>TPS</th><th>TTFT</th><th>Avg Time</th><th>Quality</th><th>Tokens</th><th>Cost</th>
+        </tr></thead>
+        <tbody id="compTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="insights" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">06 / Takeaways</div>
+    <h2 class="section-title reveal">Key Insights</h2>
+    <p class="section-desc reveal">What do 105 tests across 5 models reveal?</p>
+    <div class="insight-cards reveal">
+      <div class="insight-card">
+        <div class="emoji">&#x1F3C6;</div>
+        <h4>Cloud Wins on Quality</h4>
+        <p>All 3 Claude models scored 8.25+ quality. Opus (8.65) edges Sonnet (8.59) by a hair. The best local model (qwen3-coder at 7.48) trails Haiku by 0.77 points &mdash; meaningful at scale.</p>
+      </div>
+      <div class="insight-card">
+        <div class="emoji">&#x26A1;</div>
+        <h4>Haiku is the Speed King</h4>
+        <p>At 169.7 tok/s, Claude Haiku 4.5 is 3.5x faster than qwen3-coder and delivers near-Opus quality (8.25 vs 8.65) at 19% of the cost. The best value proposition in this benchmark by far.</p>
+      </div>
+      <div class="insight-card">
+        <div class="emoji">&#x1F4B0;</div>
+        <h4>Local = Free but Slower</h4>
+        <p>qwen3-coder delivers 7.48 quality at 0 cost &mdash; solid for offline/private use. But Haiku at $0.28 for 21 prompts gets you +0.77 quality and 3.5x speed. The gap is real.</p>
+      </div>
+    </div>
+    <div class="insight-cards reveal" style="margin-top: 16px;">
+      <div class="insight-card">
+        <div class="emoji">&#x1F9E0;</div>
+        <h4>Sonnet = Best Debugger</h4>
+        <p>Claude Sonnet 4.6 scored 9.60 on Debugging &amp; Reasoning &mdash; the highest single-category score of any model. For code review and bug-finding, it's unmatched at $0.93.</p>
+      </div>
+      <div class="insight-card">
+        <div class="emoji">&#x1F4BB;</div>
+        <h4>qwen3-coder: Local Champion</h4>
+        <p>The MoE architecture shines on Apple Silicon &mdash; 48.8 tok/s, 1.1s TTFT, and 7.48 quality. Runs 100% offline on your MacBook with zero internet. Privacy-first, air-gapped, and completely free.</p>
+      </div>
+      <div class="insight-card">
+        <div class="emoji">&#x26A0;</div>
+        <h4>Bias Caveat</h4>
+        <p>63 of 105 scores involve Claude judging Claude. These are flagged but may inflate cloud scores. A truly fair comparison would need an independent judge (e.g., GPT-4 or human reviewers).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bridge">
+  <div class="container">
+    <div class="bridge-card reveal">
+      <div class="bridge-label">What's Next</div>
+      <h2 class="bridge-title">Your Local Models Are Fast. Can They Be Faster?</h2>
+      <div class="bridge-stats">
+        <div class="bridge-stat">
+          <div class="stat-num" style="color: var(--qwen3);">48.8</div>
+          <div class="stat-label">Local Champion TPS</div>
+        </div>
+        <div class="bridge-stat">
+          <div class="stat-num" style="color: var(--text-muted);">vs</div>
+          <div class="stat-label">&nbsp;</div>
+        </div>
+        <div class="bridge-stat">
+          <div class="stat-num" style="color: var(--haiku);">169.7</div>
+          <div class="stat-label">Cloud Champion TPS</div>
+        </div>
+      </div>
+      <p class="bridge-copy">The 3.5x speed gap is real &mdash; but it's not about the model. It's about <strong>memory bandwidth</strong>. Better hardware can close that gap.</p>
+      <a href="hardware.html" class="bridge-cta">Explore the Hardware Guide &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Phase 1: Benchmark Results &bull; 5 Models &bull; 105 Tests &bull; Quality Scored by Claude Sonnet 4.6 &bull; February 2026</p>
+    <p style="margin-top:6px;font-size:11px;">63/105 scores flagged for Claude-judging-Claude bias. Local models scored independently. 2 slow models (deepseek-r1, glm-4.7-flash) excluded &mdash; full 7-model data available.</p>
+    <p style="margin-top:10px;font-size:13px;"><a href="hardware.html">Phase 2: Hardware Guide &rarr;</a> What's limiting local TPS and how to fix it</p>
+  </div>
+</footer>
+
+<script>
+const M = [
+  { name: 'Claude Haiku 4.5', type: 'Cloud', color: '#06b6d4', tps: 169.7, ttft: 0.5, totalTime: 16.6, quality: 8.25, tokens: 55127, cost: 0.28 },
+  { name: 'Claude Sonnet 4.6', type: 'Cloud', color: '#8b5cf6', tps: 77.7, ttft: 1.0, totalTime: 39.9, quality: 8.59, tokens: 60938, cost: 0.93 },
+  { name: 'Claude Opus 4.6', type: 'Cloud', color: '#ec4899', tps: 76.6, ttft: 1.8, totalTime: 40.4, quality: 8.65, tokens: 58082, cost: 1.48 },
+  { name: 'qwen3-coder', type: 'Local', color: '#10b981', tps: 48.8, ttft: 1.1, totalTime: 37.8, quality: 7.48, tokens: 35063, cost: 0 },
+  { name: 'qwen2.5-coder:14b', type: 'Local', color: '#3b82f6', tps: 15.6, ttft: 1.5, totalTime: 68.2, quality: 6.64, tokens: 21595, cost: 0 },
+];
+
+// quality data per category: [haiku, sonnet, opus, qwen3, qwen25]
+const CATS = [
+  { label: 'Code Generation', q: [8.7,8.5,8.4,8.5,7.4] },
+  { label: 'Debugging & Reasoning', q: [8.8,9.6,9.4,7.8,7.2] },
+  { label: 'Short Quick Tasks', q: [9.4,9.7,9.6,9.0,7.9] },
+  { label: 'Long Complex Research', q: [7.0,7.5,7.6,6.2,5.2] },
+  { label: 'Refactoring', q: [8.3,8.0,9.0,8.6,6.8] },
+  { label: 'Explanation & Teaching', q: [7.5,8.0,7.9,5.6,5.4] },
+  { label: 'Tool Calling / Agentic', q: [8.1,8.8,8.8,6.9,6.8] },
+];
+// Already in M order (haiku, sonnet, opus, qwen3, qwen25)
+const CAT_REORDERED = CATS.map(c => ({ label: c.label, data: c.q }));
+
+const COLORS = M.map(m => m.color);
+const COLORS40 = COLORS.map(c => c + '66');
+
+Chart.defaults.color = '#8b9ec2';
+Chart.defaults.borderColor = '#1e2a3f';
+Chart.defaults.font.family = "'Outfit', sans-serif";
+
+// TTFT
+new Chart(document.getElementById('ttftChart'), {
+  type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.ttft), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
+  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(1) + 's' } } }, scales: { x: { title: { display: true, text: 'Seconds' }, grid: { color: '#1e2a3f44' } }, y: { grid: { display: false } } } }
+});
+
+// Response Time
+new Chart(document.getElementById('responseTimeChart'), {
+  type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.totalTime), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
+  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(1) + 's' } } }, scales: { x: { title: { display: true, text: 'Seconds' }, grid: { color: '#1e2a3f44' } }, y: { grid: { display: false } } } }
+});
+
+// Quality Bar
+new Chart(document.getElementById('qualityBarChart'), {
+  type: 'bar', data: { labels: M.map(m => m.name), datasets: [{ data: M.map(m => m.quality), backgroundColor: COLORS40, borderColor: COLORS, borderWidth: 1.5, borderRadius: 6 }] },
+  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.x.toFixed(2) + '/10' } } }, scales: { x: { min: 0, max: 10, title: { display: true, text: 'Score (1-10)' }, grid: { color: '#1e2a3f44' } }, y: { grid: { display: false } } } }
+});
+
+// Cost per Quality (only paid models)
+const paidM = M.filter(m => m.cost > 0);
+new Chart(document.getElementById('costQualityChart'), {
+  type: 'bar', data: { labels: [...paidM.map(m => m.name), ...M.filter(m => m.cost === 0).map(m => m.name)],
+    datasets: [{ data: [...paidM.map(m => +(m.cost / m.quality).toFixed(4)), ...M.filter(m => m.cost === 0).map(() => 0)],
+      backgroundColor: [...paidM.map(m => m.color + '66'), ...M.filter(m => m.cost === 0).map(m => m.color + '22')],
+      borderColor: [...paidM.map(m => m.color), ...M.filter(m => m.cost === 0).map(m => m.color + '44')],
+      borderWidth: 1.5, borderRadius: 6 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y === 0 ? 'Free' : '$' + c.parsed.y.toFixed(4) + '/point' } } },
+    scales: { y: { title: { display: true, text: '$/quality point' }, grid: { color: '#1e2a3f44' } }, x: { grid: { display: false } } } }
+});
+
+// Quality vs Speed scatter
+new Chart(document.getElementById('qualitySpeedChart'), {
+  type: 'bubble', data: { datasets: M.map(m => ({ label: m.name, data: [{ x: m.tps, y: m.quality, r: Math.sqrt(m.tokens) / 10 }], backgroundColor: m.color + '55', borderColor: m.color, borderWidth: 2 })) },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } }, tooltip: { callbacks: { label: c => [c.dataset.label, `Speed: ${c.raw.x} tok/s`, `Quality: ${c.raw.y}/10`] } } },
+    scales: { x: { title: { display: true, text: 'Tokens/sec (log)' }, type: 'logarithmic', grid: { color: '#1e2a3f44' } }, y: { title: { display: true, text: 'Quality Score' }, min: 4, max: 10, grid: { color: '#1e2a3f44' } } } }
+});
+
+// Radar
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar', data: { labels: CAT_REORDERED.map(c => c.label), datasets: M.map((m, i) => ({ label: m.name, data: CAT_REORDERED.map(c => c.data[i]), borderColor: m.color, backgroundColor: m.color + '12', borderWidth: 2, pointRadius: 3, pointBackgroundColor: m.color, pointBorderColor: '#060a14', pointBorderWidth: 1.5 })) },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } } }, scales: { r: { min: 0, max: 10, grid: { color: '#1e2a3f' }, angleLines: { color: '#1e2a3f' }, pointLabels: { font: { size: 10 }, color: '#8b9ec2' }, ticks: { display: false } } } }
+});
+
+// Speed bars
+const sb = document.getElementById('speedBars');
+const maxTps = Math.max(...M.map(m => m.tps));
+M.forEach(m => {
+  const pct = (m.tps / maxTps * 100).toFixed(1);
+  sb.innerHTML += `<div class="speed-bar-row"><div class="speed-bar-name" style="color:${m.color}">${m.name}</div><div class="speed-bar-track"><div class="speed-bar-fill" style="background:${m.color}44;border:1px solid ${m.color};--target:${pct}%"></div></div><div class="speed-bar-value" style="color:${m.color}">${m.tps}</div></div>`;
+});
+
+// Heatmap
+const hm = document.getElementById('heatmap');
+hm.innerHTML = '<div class="heatmap-header cat-label">Category</div>';
+M.forEach(m => { hm.innerHTML += `<div class="heatmap-header" style="color:${m.color};font-size:9px">${m.name.replace('Claude ','').replace(':14b','')}</div>`; });
+CAT_REORDERED.forEach(cat => {
+  hm.innerHTML += `<div class="heatmap-cat">${cat.label}</div>`;
+  cat.data.forEach((val, i) => {
+    const green = Math.max(0, (val - 1) / 9);
+    const bg = val <= 2 ? 'rgba(244,63,94,0.2)' : `rgba(16,185,129,${green * 0.4})`;
+    const clr = val <= 2 ? '#f43f5e' : val >= 8 ? '#10b981' : '#f0f4f8';
+    hm.innerHTML += `<div class="heatmap-cell" style="background:${bg};color:${clr}">${val.toFixed(1)}</div>`;
+  });
+});
+
+// Comparison table
+const tb = document.getElementById('compTableBody');
+M.sort((a, b) => b.quality - a.quality).forEach(m => {
+  const qClass = m.quality >= 8 ? 'quality-high' : m.quality >= 6.5 ? 'quality-mid' : 'quality-low';
+  tb.innerHTML += `<tr><td class="model-name-cell" style="color:${m.color}">${m.name}</td><td>${m.type}</td><td>${m.tps}</td><td>${m.ttft}s</td><td>${m.totalTime}s</td><td><span class="quality-badge ${qClass}">${m.quality.toFixed(2)}</span></td><td>${m.tokens.toLocaleString()}</td><td>${m.cost > 0 ? '$' + m.cost.toFixed(2) : 'Free'}</td></tr>`;
+});
+
+// Scroll animations
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      e.target.querySelectorAll('.speed-bar-fill').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.style.getPropertyValue('--target'); }, 200);
+      });
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

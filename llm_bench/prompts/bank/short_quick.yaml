@@ -1,0 +1,60 @@
+category: short_quick
+label: "Short Quick Tasks"
+description: "One-liners, quick conversions, and small utilities"
+prompts:
+  - id: sq_flatten_list
+    title: "Flatten Nested List"
+    system: "You are a Python expert. Be concise."
+    prompt: |
+      Write a Python function `flatten(lst)` that recursively flattens an arbitrarily nested list.
+
+      Example:
+      - flatten([1, [2, [3, 4], 5], [6, 7]]) -> [1, 2, 3, 4, 5, 6, 7]
+      - flatten([]) -> []
+      - flatten([[[[1]]]]) -> [1]
+
+      Provide the function and 3 test cases.
+
+  - id: sq_js_to_ts
+    title: "JavaScript to TypeScript Conversion"
+    system: "You are a TypeScript expert. Add proper types."
+    prompt: |
+      Convert this JavaScript to fully typed TypeScript. Add interfaces, type annotations,
+      and generic types where appropriate:
+
+      ```javascript
+      function groupBy(array, keyFn) {
+        return array.reduce((groups, item) => {
+          const key = keyFn(item);
+          if (!groups[key]) {
+            groups[key] = [];
+          }
+          groups[key].push(item);
+          return groups;
+        }, {});
+      }
+
+      function sortBy(array, keyFn, descending = false) {
+        return [...array].sort((a, b) => {
+          const valA = keyFn(a);
+          const valB = keyFn(b);
+          const cmp = valA < valB ? -1 : valA > valB ? 1 : 0;
+          return descending ? -cmp : cmp;
+        });
+      }
+
+      function pipe(...fns) {
+        return (input) => fns.reduce((acc, fn) => fn(acc), input);
+      }
+      ```
+
+  - id: sq_regex_validation
+    title: "Regex Validation Suite"
+    system: "You are a regex expert. Provide well-tested patterns."
+    prompt: |
+      Write Python functions using regex to validate each of the following. Each function should
+      return True/False. Include 3 valid and 3 invalid test cases for each:
+
+      1. `is_valid_email(s)` - standard email validation
+      2. `is_valid_ipv4(s)` - IPv4 address (0.0.0.0 to 255.255.255.255)
+      3. `is_strong_password(s)` - min 8 chars, uppercase, lowercase, digit, special char

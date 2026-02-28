@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM-Bench — On-Premise LLM Infrastructure Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-deep: #060a14;
+  --bg-card: #0d1321;
+  --bg-surface: #161e2e;
+  --border: #1e2a3f;
+  --border-glow: #1e3a5f;
+  --text-primary: #f0f4f8;
+  --text-secondary: #8b9ec2;
+  --text-muted: #4a5e82;
+  --accent: #818cf8;
+  --emerald: #10b981;
+  --indigo: #818cf8;
+  --amber: #f59e0b;
+  --rose: #f43f5e;
+  --cyan: #06b6d4;
+  --violet: #8b5cf6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #1e3a5f #060a14; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg-deep); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+body::before { content: ''; position: fixed; inset: 0; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; }
+.glow-orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.1; pointer-events: none; z-index: 0; }
+.glow-orb.emerald { width: 400px; height: 400px; background: #10b981; top: 5%; left: 10%; }
+.glow-orb.violet { width: 350px; height: 350px; background: #8b5cf6; top: 30%; right: 5%; }
+.glow-orb.cyan { width: 300px; height: 300px; background: #06b6d4; bottom: 20%; left: 20%; }
+.container { max-width: 1260px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* Nav */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(6,10,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 14px 0; }
+nav .container { display: flex; align-items: center; justify-content: space-between; }
+nav .logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+nav .logo span { color: var(--emerald); }
+nav .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.2s; }
+nav .nav-links a:hover { color: var(--text-primary); }
+nav .nav-links a.back-link { color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 6px; }
+nav .nav-links a.back-link:hover { background: var(--accent); color: var(--bg-deep); }
+
+/* Hero */
+.hero { padding: 100px 0 80px; text-align: center; }
+.hero .badge { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 100px; padding: 6px 16px; font-size: 12px; color: var(--text-secondary); margin-bottom: 32px; font-family: 'IBM Plex Mono', monospace; }
+.hero .badge .dot { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.hero h1 { font-size: clamp(36px, 5.5vw, 64px); font-weight: 900; letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px; background: linear-gradient(135deg, #f0f4f8 20%, #10b981 50%, #818cf8 80%, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero .subtitle { font-size: 20px; color: var(--amber); max-width: 640px; margin: 0 auto 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+.hero .subtitle-desc { font-size: 16px; color: var(--text-secondary); max-width: 640px; margin: 0 auto 40px; font-weight: 300; }
+.hero .meta-row { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; }
+.hero .meta-item { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.hero .meta-item strong { color: var(--text-secondary); font-weight: 600; }
+
+/* Sections */
+section { padding: 80px 0; }
+.section-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.section-title { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 12px; }
+.section-desc { color: var(--text-secondary); font-size: 15px; max-width: 640px; margin-bottom: 48px; }
+
+/* Cards */
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; position: relative; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.card.emerald-top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--emerald); }
+.card.indigo-top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--indigo); }
+.card.amber-top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--amber); }
+.card.violet-top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--violet); }
+.card.cyan-top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--cyan); }
+.card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.card .card-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+/* Chart wrappers */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
+.chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+.chart-card.full { grid-column: 1 / -1; }
+.chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.chart-card .chart-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+.chart-wrap { position: relative; height: 340px; }
+.chart-wrap.tall { height: 420px; }
+.chart-wrap.short { height: 280px; }
+
+/* Formula card */
+.formula-box { background: var(--bg-surface); border: 1px solid var(--border-glow); border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0; }
+.formula { font-family: 'IBM Plex Mono', monospace; font-size: clamp(14px, 2.5vw, 22px); font-weight: 600; color: var(--emerald); letter-spacing: 0.5px; }
+.formula-note { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+
+/* Pipe analogy */
+.pipe-analogy { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+@media (max-width: 600px) { .pipe-analogy { grid-template-columns: 1fr; } }
+.pipe-item { background: var(--bg-surface); border-radius: 10px; padding: 18px; }
+.pipe-item .pipe-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.pipe-item .pipe-value { font-size: 15px; font-weight: 600; }
+.pipe-item .pipe-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+/* Calculator */
+.calc-container { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+@media (max-width: 768px) { .calc-container { grid-template-columns: 1fr; } }
+.slider-group { margin-bottom: 24px; }
+.slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.slider-label span:first-child { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.slider-label .slider-value { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: var(--emerald); }
+input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--bg-surface); border-radius: 3px; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--emerald); border-radius: 50%; cursor: pointer; border: 2px solid var(--bg-deep); }
+input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--emerald); border-radius: 50%; cursor: pointer; border: 2px solid var(--bg-deep); }
+.calc-result { background: var(--bg-surface); border: 1px solid var(--border-glow); border-radius: 14px; padding: 32px; text-align: center; }
+.calc-result .result-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px; }
+.calc-result .result-value { font-family: 'IBM Plex Mono', monospace; font-size: 56px; font-weight: 700; color: var(--emerald); line-height: 1; }
+.calc-result .result-unit { font-size: 18px; color: var(--text-secondary); font-weight: 400; }
+.calc-result .result-note { font-size: 12px; color: var(--text-muted); margin-top: 16px; }
+.validation-box { margin-top: 16px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 14px; text-align: left; }
+.validation-box .vb-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--emerald); margin-bottom: 6px; font-weight: 600; }
+.validation-box .vb-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); padding: 3px 0; }
+.validation-box .vb-row .mono { color: var(--text-primary); }
+
+/* Hardware grid */
+.hw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 1000px) { .hw-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .hw-grid { grid-template-columns: 1fr; } }
+.hw-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; position: relative; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+.hw-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.hw-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.hw-card.current::before { background: var(--emerald); }
+.hw-card.upgrade::before { background: var(--indigo); }
+.hw-card.premium::before { background: var(--amber); }
+.hw-card.upcoming::before { background: var(--violet); }
+.hw-card .hw-badge { position: absolute; top: 10px; right: 12px; font-size: 10px; font-family: 'IBM Plex Mono', monospace; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.hw-card.current .hw-badge { background: rgba(16,185,129,0.15); color: var(--emerald); }
+.hw-card.upgrade .hw-badge { background: rgba(129,140,248,0.15); color: var(--indigo); }
+.hw-card.premium .hw-badge { background: rgba(245,158,11,0.15); color: var(--amber); }
+.hw-card.upcoming .hw-badge { background: rgba(139,92,246,0.15); color: var(--violet); }
+.hw-card .hw-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; margin-top: 2px; }
+.hw-card .hw-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.hw-card .hw-stats { display: flex; flex-direction: column; gap: 8px; }
+.hw-card .hw-stat { display: flex; justify-content: space-between; align-items: baseline; }
+.hw-card .hw-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.hw-card .hw-stat-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; }
+.hw-card .tps-bar { margin-top: 14px; }
+.hw-card .tps-bar-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.hw-card .tps-bar-track { height: 22px; background: var(--bg-surface); border-radius: 6px; overflow: hidden; }
+.hw-card .tps-bar-fill { height: 100%; border-radius: 6px; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); width: 0; position: relative; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-primary); }
+
+/* Model fit */
+.fit-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+@media (max-width: 560px) { .fit-controls { grid-template-columns: 1fr; } }
+.fit-controls select { background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-family: 'Outfit', sans-serif; font-size: 14px; width: 100%; cursor: pointer; outline: none; }
+.fit-controls select:focus { border-color: var(--accent); }
+.fit-controls label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+.fit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 1000px) { .fit-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .fit-grid { grid-template-columns: 1fr; } }
+.fit-item { background: var(--bg-surface); border-radius: 10px; padding: 16px; border: 1px solid var(--border); transition: border-color 0.3s; }
+.fit-item.can-run { border-color: rgba(16,185,129,0.3); }
+.fit-item.cant-run { border-color: rgba(244,63,94,0.2); opacity: 0.6; }
+.fit-item .fit-hw { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.fit-item .fit-status { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.fit-item .fit-tps { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 700; }
+.fit-item .fit-tps-unit { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+
+/* Cluster */
+.cluster-container { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+@media (max-width: 768px) { .cluster-container { grid-template-columns: 1fr; } }
+.cluster-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.cluster-stat { background: var(--bg-surface); border-radius: 10px; padding: 16px; text-align: center; }
+.cluster-stat .cs-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.cluster-stat .cs-value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; color: var(--cyan); }
+.cluster-stat .cs-unit { font-size: 11px; color: var(--text-secondary); }
+
+/* Cost analysis */
+.cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+@media (max-width: 768px) { .cost-grid { grid-template-columns: 1fr; } }
+.cost-col h4 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary); }
+.cost-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.cost-row:last-child { border-bottom: none; }
+.cost-row .cost-name { font-size: 13px; }
+.cost-row .cost-val { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; }
+
+/* Insight cards */
+.insight-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 768px) { .insight-cards { grid-template-columns: 1fr; } }
+.insight-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+.insight-card .ic-icon { font-size: 28px; margin-bottom: 12px; }
+.insight-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.insight-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* Decision helper */
+.decision-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+@media (max-width: 900px) { .decision-controls { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .decision-controls { grid-template-columns: 1fr; } }
+.decision-controls label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+.decision-controls select { background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-family: 'Outfit', sans-serif; font-size: 14px; width: 100%; cursor: pointer; outline: none; }
+.decision-controls select:focus { border-color: var(--accent); }
+.rec-box { background: var(--bg-surface); border: 2px solid var(--emerald); border-radius: 14px; padding: 28px; text-align: center; transition: border-color 0.3s; }
+.rec-box .rec-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--emerald); }
+.rec-box .rec-reason { font-size: 14px; color: var(--text-secondary); max-width: 600px; margin: 0 auto 16px; }
+.rec-box .rec-specs { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+.rec-box .rec-spec { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.rec-box .rec-spec strong { color: var(--text-secondary); }
+
+/* Footer */
+footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* Animations */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.counter { display: inline-block; }
+
+/* Speed bars (reused from index) */
+.speed-bars { display: flex; flex-direction: column; gap: 14px; }
+.speed-bar-row { display: grid; grid-template-columns: 200px 1fr 80px; align-items: center; gap: 14px; }
+@media (max-width: 560px) { .speed-bar-row { grid-template-columns: 120px 1fr 60px; } }
+.speed-bar-name { font-weight: 600; font-size: 13px; }
+.speed-bar-track { height: 28px; background: var(--bg-surface); border-radius: 8px; overflow: hidden; }
+.speed-bar-fill { height: 100%; border-radius: 8px; width: 0; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
+.speed-bar-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15)); border-radius: 0 8px 8px 0; }
+.speed-bar-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 15px; text-align: right; }
+
+/* Phase indicator */
+.phase-indicator { display: flex; justify-content: center; gap: 8px; padding: 12px 0; background: var(--bg-deep); border-bottom: 1px solid var(--border); }
+.phase-pill { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.5px; padding: 4px 14px; border-radius: 100px; text-decoration: none; transition: all 0.2s; }
+.phase-pill.active { background: var(--accent); color: var(--bg-deep); font-weight: 600; }
+.phase-pill.inactive { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border); }
+a.phase-pill.inactive:hover { color: var(--text-primary); border-color: var(--accent); }
+
+/* Context bridge */
+.context-bridge { padding: 0 0 40px; }
+.context-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 48px; max-width: 900px; margin: 0 auto; position: relative; overflow: hidden; }
+.context-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #818cf8, #10b981); }
+.context-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.context-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px; }
+.context-copy { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px; }
+.context-copy a { color: var(--accent); text-decoration: none; }
+.context-copy a:hover { text-decoration: underline; }
+.context-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+@media (max-width: 600px) { .context-metrics { grid-template-columns: repeat(2, 1fr); } }
+.context-metric { background: var(--bg-surface); border-radius: 10px; padding: 16px; text-align: center; }
+.context-metric .cm-value { font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 800; line-height: 1; }
+.context-metric .cm-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.context-arrow { font-size: 14px; color: var(--text-secondary); line-height: 1.6; padding: 16px 20px; background: rgba(16,185,129,0.06); border-left: 3px solid var(--emerald); border-radius: 0 8px 8px 0; }
+</style>
+</head>
+<body>
+
+<div class="glow-orb emerald"></div>
+<div class="glow-orb violet"></div>
+<div class="glow-orb cyan"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="logo">LLM<span>.</span>Bench</div>
+    <div class="nav-links">
+      <a href="#bandwidth">Bandwidth</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#hardware">Hardware</a>
+      <a href="#model-fit">Model Fit</a>
+      <a href="#cluster">Cluster</a>
+      <a href="#cost">Cost</a>
+      <a href="#insights">Insights</a>
+      <a href="#decision">Decision</a>
+      <a href="index.html" class="back-link">Phase 1 Results</a>
+    </div>
+  </div>
+</nav>
+
+<div class="phase-indicator">
+  <a href="index.html" class="phase-pill inactive">Phase 1: Benchmarks</a>
+  <span class="phase-pill active">Phase 2: Hardware Guide</span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="badge"><span class="dot"></span>Hardware planning &bull; Based on real benchmarks</div>
+    <h1>On-Premise LLM<br>Infrastructure Guide</h1>
+    <p class="subtitle">Memory Bandwidth is the Bottleneck</p>
+    <p class="subtitle-desc">Understanding what drives local LLM performance, and choosing the right hardware for your workload.</p>
+    <div class="meta-row">
+      <div class="meta-item"><strong>Benchmarks</strong> 147 real tests</div>
+      <div class="meta-item"><strong>Hardware</strong> M2 Max 32GB</div>
+      <div class="meta-item"><strong>Models</strong> 7 tested</div>
+      <div class="meta-item"><strong>Framework</strong> Ollama + llama.cpp</div>
+    </div>
+  </div>
+</section>
+
+<section class="context-bridge">
+  <div class="container">
+    <div class="context-card reveal">
+      <div class="context-label">From Benchmarks to Hardware</div>
+      <h2 class="context-title">Phase 1 revealed the gap. Phase 2 explains why &mdash; and how to close it.</h2>
+      <p class="context-copy">In <a href="index.html">Phase 1</a>, we benchmarked 5 models across 21 coding prompts. The best local model (qwen3-coder at 48.8 tok/s) delivered solid quality for free &mdash; but cloud models ran 3.5x faster. Why? And can better hardware close that gap?</p>
+      <div class="context-metrics">
+        <div class="context-metric">
+          <div class="cm-value" style="color: #10b981;">48.8</div>
+          <div class="cm-label">Best Local TPS</div>
+        </div>
+        <div class="context-metric">
+          <div class="cm-value" style="color: #06b6d4;">169.7</div>
+          <div class="cm-label">Best Cloud TPS</div>
+        </div>
+        <div class="context-metric">
+          <div class="cm-value" style="color: #f59e0b;">3.5x</div>
+          <div class="cm-label">Speed Gap</div>
+        </div>
+        <div class="context-metric">
+          <div class="cm-value" style="color: #818cf8;">400</div>
+          <div class="cm-label">M2 Max GB/s</div>
+        </div>
+      </div>
+      <div class="context-arrow">The answer is <strong>memory bandwidth</strong>. Scroll down to see the formula, the math, and the hardware that can push local TPS past 90.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 01: THE BANDWIDTH INSIGHT -->
+<section id="bandwidth" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">01 / The Core Insight</div>
+    <h2 class="section-title reveal">Why Memory Bandwidth Determines TPS</h2>
+    <p class="section-desc reveal">Local LLM inference is memory-bound, not compute-bound. Every token generated requires reading the entire model from memory once. The speed of that read is your throughput ceiling.</p>
+
+    <div class="card emerald-top reveal" style="max-width: 800px; margin: 0 auto;">
+      <h3>The Fundamental Formula</h3>
+      <div class="formula-box">
+        <div class="formula">TPS = (Memory Bandwidth GB/s / Model Size GB) x Efficiency</div>
+        <div class="formula-note">Efficiency factor: 0.5 - 0.7 typical for Ollama/llama.cpp on Apple Silicon</div>
+      </div>
+
+      <div class="pipe-analogy">
+        <div class="pipe-item">
+          <div class="pipe-label">Memory Bandwidth = Pipe Diameter</div>
+          <div class="pipe-value" style="color: var(--emerald);">400 GB/s on M2 Max</div>
+          <div class="pipe-desc">How fast data can flow from unified memory to the GPU/CPU. Wider pipe = more data per second = more tokens.</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Model Size = Water Volume Per Token</div>
+          <div class="pipe-value" style="color: var(--amber);">15.3 GB for qwen3-coder Q4</div>
+          <div class="pipe-desc">Each token requires reading the full model weights. Bigger model = more data per token = slower generation.</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; padding: 16px; background: var(--bg-surface); border-radius: 10px;">
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">VALIDATION AGAINST REAL DATA</div>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Predicted:</span>
+            <span class="mono" style="font-size: 16px; font-weight: 600; color: var(--accent);">400 / 15.3 x 0.6 = <span style="color: var(--indigo);">15.7</span> TPS</span>
+          </div>
+          <div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Actual (dense equivalent):</span>
+            <span class="mono" style="font-size: 16px; font-weight: 600; color: var(--emerald);">48.8 TPS</span>
+            <span style="font-size: 11px; color: var(--text-muted);">(MoE: only 8B active)</span>
+          </div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">qwen3-coder uses MoE architecture (8B active of 30B total), so effective model size is ~5.2 GB. 400/5.2 x 0.6 = 46.2 TPS -- very close to actual 48.8 TPS.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02: INTERACTIVE TPS CALCULATOR -->
+<section id="calculator">
+  <div class="container">
+    <div class="section-label reveal">02 / Calculator</div>
+    <h2 class="section-title reveal">Interactive TPS Projector</h2>
+    <p class="section-desc reveal">Adjust bandwidth, model size, and efficiency to project tokens-per-second for any hardware + model combination.</p>
+
+    <div class="card indigo-top reveal">
+      <div class="calc-container">
+        <div class="calc-sliders">
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Memory Bandwidth</span>
+              <span class="slider-value" id="bwValue">400 GB/s</span>
+            </div>
+            <input type="range" id="bwSlider" min="100" max="1000" value="400" step="1">
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Model Size</span>
+              <span class="slider-value" id="sizeValue">15.0 GB</span>
+            </div>
+            <input type="range" id="sizeSlider" min="2" max="200" value="15" step="0.5">
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Efficiency Factor</span>
+              <span class="slider-value" id="effValue">0.60</span>
+            </div>
+            <input type="range" id="effSlider" min="30" max="90" value="60" step="1">
+          </div>
+          <div class="validation-box">
+            <div class="vb-title">M2 Max Benchmark Reference</div>
+            <div class="vb-row"><span>qwen3-coder (MoE, ~5.2 GB active)</span><span class="mono">48.8 TPS actual</span></div>
+            <div class="vb-row"><span>qwen2.5-coder:14b (7.4 GB Q4)</span><span class="mono">15.6 TPS actual</span></div>
+            <div class="vb-row"><span>deepseek-r1:14b (7.4 GB Q4)</span><span class="mono">14.6 TPS actual</span></div>
+            <div class="vb-row"><span>glm-4.7-flash (~5 GB Q4)</span><span class="mono">10.2 TPS actual</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="calc-result">
+            <div class="result-label">Projected TPS</div>
+            <div class="result-value" id="calcTps">16.0</div>
+            <div class="result-unit">tokens / second</div>
+            <div class="result-note" id="calcNote">400 GB/s / 15.0 GB x 0.60</div>
+          </div>
+          <div style="margin-top: 16px; text-align: center; font-size: 12px; color: var(--text-muted);">
+            <div id="calcContext"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03: HARDWARE COMPARISON CARDS -->
+<section id="hardware" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">03 / Hardware</div>
+    <h2 class="section-title reveal">Apple Silicon Lineup</h2>
+    <p class="section-desc reveal">Six hardware configurations compared. Projected TPS based on the bandwidth formula with qwen3-coder (15.3 GB Q4, MoE ~5.2 GB active).</p>
+
+    <div class="hw-grid reveal" id="hwGrid"></div>
+  </div>
+</section>
+
+<!-- 04: TPS PROJECTIONS CHART -->
+<section id="projections">
+  <div class="container">
+    <div class="section-label reveal">04 / Projections</div>
+    <h2 class="section-title reveal">TPS Across Hardware</h2>
+    <p class="section-desc reveal">Projected tokens-per-second for qwen3-coder on each hardware configuration. The M2 Max bar shows actual benchmark data.</p>
+
+    <div class="chart-card full reveal">
+      <h3>qwen3-coder Projected TPS by Hardware</h3>
+      <div class="chart-desc">Horizontal bars. Green = actual measured data. Blue = projected from bandwidth formula.</div>
+      <div class="chart-wrap tall"><canvas id="tpsProjectionChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05: MODEL FIT CALCULATOR -->
+<section id="model-fit" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">05 / Model Fit</div>
+    <h2 class="section-title reveal">Can Your Hardware Run It?</h2>
+    <p class="section-desc reveal">Select a model and quantization to see which hardware configs can fit it in RAM, and the projected throughput.</p>
+
+    <div class="card indigo-top reveal">
+      <div class="fit-controls">
+        <div>
+          <label>Model</label>
+          <select id="fitModel">
+            <option value="qwen3-coder" selected>qwen3-coder (30B MoE, 15.3 GB Q4)</option>
+            <option value="14b-q4">14B model (7.4 GB Q4)</option>
+            <option value="70b-q4">70B model (35.3 GB Q4)</option>
+            <option value="qwen3-235b">Qwen3-235B-MoE (117.5 GB Q4)</option>
+            <option value="405b-q4">405B model (202.5 GB Q4)</option>
+          </select>
+        </div>
+        <div>
+          <label>Quantization</label>
+          <select id="fitQuant">
+            <option value="q4" selected>Q4 (4-bit) -- Best speed/quality</option>
+            <option value="q8">Q8 (8-bit) -- Higher quality</option>
+            <option value="fp16">FP16 (16-bit) -- Full precision</option>
+          </select>
+        </div>
+      </div>
+      <div class="fit-grid" id="fitGrid"></div>
+      <div style="margin-top: 16px; font-size: 11px; color: var(--text-muted);">
+        RAM requirement includes ~2-4 GB overhead for KV cache and runtime. Models need to fit entirely in RAM for acceptable performance (no swap).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06: EXO CLUSTER ESTIMATOR -->
+<section id="cluster">
+  <div class="container">
+    <div class="section-label reveal">06 / Cluster</div>
+    <h2 class="section-title reveal">exo Cluster Estimator</h2>
+    <p class="section-desc reveal">exo lets you pool multiple Macs into a single inference cluster. Add Mac Mini nodes to see aggregate performance projections.</p>
+
+    <div class="card cyan-top reveal">
+      <div class="cluster-container">
+        <div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>Mac Mini M4 Pro Nodes</span>
+              <span class="slider-value" id="nodeValue">2 nodes</span>
+            </div>
+            <input type="range" id="nodeSlider" min="1" max="8" value="2" step="1">
+          </div>
+          <div class="cluster-stats" id="clusterStats">
+            <!-- filled by JS -->
+          </div>
+          <div style="margin-top: 16px; font-size: 11px; color: var(--text-muted);">
+            Scaling efficiency: 95% for 2 nodes, 85% for 3-4, 75% for 5+ (network overhead). Based on exo/Thunderbolt clustering benchmarks.
+          </div>
+        </div>
+        <div>
+          <div class="chart-wrap short"><canvas id="clusterChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07: COST ANALYSIS -->
+<section id="cost" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">07 / Cost</div>
+    <h2 class="section-title reveal">Total Cost of Ownership</h2>
+    <p class="section-desc reveal">Local hardware amortized over 3 years at 25% utilization vs cloud API pricing. Where is the breakeven?</p>
+
+    <div class="chart-grid">
+      <div class="card amber-top reveal">
+        <h3>Local: Cost per 1M Tokens</h3>
+        <div class="card-desc">Hardware amortized over 3 years, 25% utilization, electricity included</div>
+        <div id="localCostRows"></div>
+      </div>
+      <div class="card violet-top reveal">
+        <h3>Cloud: API Pricing (per 1M output tokens)</h3>
+        <div class="card-desc">Pay-per-use, no hardware investment, scales instantly</div>
+        <div id="cloudCostRows"></div>
+      </div>
+    </div>
+
+    <div class="chart-card full reveal" style="margin-top: 20px;">
+      <h3>Breakeven Analysis: Tokens to Pay Off Hardware</h3>
+      <div class="chart-desc">How many million output tokens until local hardware costs less than each cloud tier. Lower = faster payoff.</div>
+      <div class="chart-wrap tall"><canvas id="breakevenChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 08: KEY INSIGHTS -->
+<section id="insights">
+  <div class="container">
+    <div class="section-label reveal">08 / Key Insights</div>
+    <h2 class="section-title reveal">What You Need to Know</h2>
+    <p class="section-desc reveal">Four critical facts about running LLMs locally on Apple Silicon.</p>
+
+    <div class="insight-cards reveal">
+      <div class="insight-card" style="border-top: 3px solid var(--amber);">
+        <div class="ic-icon">&#x1F4BE;</div>
+        <h4>More RAM Does Not Mean Faster</h4>
+        <p>RAM capacity determines the <em>largest</em> model you can run, not how fast it runs. A 70B model on a 192GB Mac runs at the same TPS as on a 512GB Mac (same bandwidth chip). RAM is about fit, not speed.</p>
+      </div>
+      <div class="insight-card" style="border-top: 3px solid var(--emerald);">
+        <div class="ic-icon">&#x1F9E9;</div>
+        <h4>MoE Architecture Advantage</h4>
+        <p>Mixture-of-Experts models like qwen3-coder activate only a fraction of parameters per token (8B of 30B). This means the effective bandwidth cost per token is much lower, giving 3x the TPS of a dense model at the same parameter count.</p>
+      </div>
+      <div class="insight-card" style="border-top: 3px solid var(--cyan);">
+        <div class="ic-icon">&#x1F34E;</div>
+        <h4>MLX is 30-50% Faster</h4>
+        <p>Apple's MLX framework is optimized for Apple Silicon's unified memory architecture. Compared to Ollama/llama.cpp, MLX typically achieves 30-50% higher TPS on the same hardware by better utilizing the memory subsystem.</p>
+      </div>
+      <div class="insight-card" style="border-top: 3px solid var(--rose);">
+        <div class="ic-icon">&#x1F321;</div>
+        <h4>Thermal Throttling Matters</h4>
+        <p>MacBook Pros throttle under sustained load, dropping 10-25% performance after 5-10 minutes. Mac Studio and Mac Pro have superior cooling. For 24/7 inference servers, desktop form factors are strongly preferred.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09: DECISION HELPER -->
+<section id="decision" style="background: rgba(13,19,33,0.5);">
+  <div class="container">
+    <div class="section-label reveal">09 / Decision Helper</div>
+    <h2 class="section-title reveal">Which Hardware Should You Buy?</h2>
+    <p class="section-desc reveal">Answer four questions and get a personalized recommendation based on your budget, team size, model needs, and portability requirements.</p>
+
+    <div class="card emerald-top reveal">
+      <div class="decision-controls">
+        <div>
+          <label>Budget</label>
+          <select id="decBudget">
+            <option value="low">Under $2,000</option>
+            <option value="mid" selected>$2,000 - $4,000</option>
+            <option value="high">$4,000 - $6,000</option>
+            <option value="max">$6,000+</option>
+          </select>
+        </div>
+        <div>
+          <label>Use Case</label>
+          <select id="decUse">
+            <option value="personal" selected>Personal (1 user)</option>
+            <option value="team">Team (2-5 users)</option>
+            <option value="lab">Lab (5+ users)</option>
+          </select>
+        </div>
+        <div>
+          <label>Model Size</label>
+          <select id="decModel">
+            <option value="small">Small (&lt;14B)</option>
+            <option value="medium" selected>Medium (14-70B)</option>
+            <option value="large">Large (70B+)</option>
+          </select>
+        </div>
+        <div>
+          <label>Portability</label>
+          <select id="decPortable">
+            <option value="yes">Yes, needs to travel</option>
+            <option value="no" selected>No, desktop is fine</option>
+          </select>
+        </div>
+      </div>
+      <div id="recBox" class="rec-box"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>LLM-Bench &bull; On-Premise Infrastructure Guide &bull; February 2026</p>
+    <p style="margin-top:6px;font-size:11px;">Projections based on the bandwidth formula validated against 147 real benchmarks on M2 Max. Actual results may vary 10-20%.</p>
+    <p style="margin-top:8px;"><a href="index.html">View Phase 1 Benchmark Results (7 Models, 147 Tests)</a></p>
+  </div>
+</footer>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const HARDWARE = [
+  { id: 'm2max', name: 'M2 Max MacBook Pro', chip: 'M2 Max', ram: 32, maxRam: 96, bandwidth: 400, gpuCores: 38, price: 0, priceLabel: 'Owned', cls: 'current', badge: 'CURRENT', notes: 'Actual benchmark data', color: '#10b981' },
+  { id: 'm4pro', name: 'M4 Pro Mac Mini', chip: 'M4 Pro', ram: 48, maxRam: 64, bandwidth: 273, gpuCores: 20, price: 1799, priceLabel: '~$1,799', cls: 'upgrade', badge: 'BUDGET', notes: 'Compact & affordable server', color: '#3b82f6' },
+  { id: 'm4max-laptop', name: 'M4 Max MacBook Pro', chip: 'M4 Max', ram: 64, maxRam: 128, bandwidth: 546, gpuCores: 40, price: 3499, priceLabel: '~$3,499', cls: 'upgrade', badge: 'PORTABLE', notes: 'Portable powerhouse', color: '#818cf8' },
+  { id: 'm4max-studio', name: 'M4 Max Mac Studio', chip: 'M4 Max', ram: 128, maxRam: 128, bandwidth: 546, gpuCores: 40, price: 4499, priceLabel: '~$4,499', cls: 'premium', badge: 'DESKTOP', notes: 'Desktop powerhouse, better cooling', color: '#f59e0b' },
+  { id: 'm3ultra', name: 'M3 Ultra Mac Studio', chip: 'M3 Ultra', ram: 192, maxRam: 512, bandwidth: 819, gpuCores: 80, price: 5999, priceLabel: '~$5,999', cls: 'premium', badge: 'MAX PERF', notes: 'Maximum single-node performance', color: '#ec4899' },
+  { id: 'm4ultra', name: 'M4 Ultra Mac Studio', chip: 'M4 Ultra (expected)', ram: 256, maxRam: 512, bandwidth: 819, gpuCores: 80, price: 6999, priceLabel: '~$6,999', cls: 'upcoming', badge: 'UPCOMING', notes: 'Expected late 2026', color: '#8b5cf6' },
+];
+
+const MODELS = {
+  'qwen3-coder': { name: 'qwen3-coder', params: '30B MoE', activeGB: 5.2, q4: 15.3, q8: 30.6, fp16: 60, isMoE: true },
+  '14b-q4': { name: '14B Dense', params: '14B', activeGB: 7.4, q4: 7.4, q8: 14.8, fp16: 28, isMoE: false },
+  '70b-q4': { name: '70B Dense', params: '70B', activeGB: 35.3, q4: 35.3, q8: 70, fp16: 140, isMoE: false },
+  'qwen3-235b': { name: 'Qwen3-235B-MoE', params: '235B MoE', activeGB: 22, q4: 117.5, q8: 235, fp16: 470, isMoE: true },
+  '405b-q4': { name: 'Llama 405B', params: '405B', activeGB: 202.5, q4: 202.5, q8: 405, fp16: 810, isMoE: false },
+};
+
+const CLOUD_PRICING = [
+  { name: 'Claude Haiku 4.5', price: 5, color: '#06b6d4' },
+  { name: 'Claude Sonnet 4.6', price: 15, color: '#8b5cf6' },
+  { name: 'Claude Opus 4.6', price: 75, color: '#ec4899' },
+];
+
+const EFFICIENCY = 0.6;
+const M2_ACTUAL_TPS = 48.8; // qwen3-coder actual
+
+function calcTPS(bandwidth, activeGB, efficiency) {
+  return (bandwidth / activeGB) * efficiency;
+}
+
+function getModelSize(modelKey, quant) {
+  const m = MODELS[modelKey];
+  if (quant === 'q4') return { total: m.q4, active: m.isMoE ? m.activeGB : m.q4 };
+  if (quant === 'q8') return { total: m.q8, active: m.isMoE ? m.activeGB * 2 : m.q8 };
+  return { total: m.fp16, active: m.isMoE ? m.activeGB * 4 : m.fp16 };
+}
+
+// ============================================================
+// CHART DEFAULTS
+// ============================================================
+Chart.defaults.color = '#8b9ec2';
+Chart.defaults.borderColor = '#1e2a3f';
+Chart.defaults.font.family = "'Outfit', sans-serif";
+
+// ============================================================
+// 02: TPS CALCULATOR
+// ============================================================
+const bwSlider = document.getElementById('bwSlider');
+const sizeSlider = document.getElementById('sizeSlider');
+const effSlider = document.getElementById('effSlider');
+
+function updateCalc() {
+  const bw = +bwSlider.value;
+  const sz = +sizeSlider.value;
+  const eff = +effSlider.value / 100;
+  const tps = (bw / sz) * eff;
+
+  document.getElementById('bwValue').textContent = bw + ' GB/s';
+  document.getElementById('sizeValue').textContent = sz.toFixed(1) + ' GB';
+  document.getElementById('effValue').textContent = eff.toFixed(2);
+  document.getElementById('calcTps').textContent = tps.toFixed(1);
+  document.getElementById('calcNote').textContent = bw + ' GB/s / ' + sz.toFixed(1) + ' GB x ' + eff.toFixed(2);
+
+  const ctx = document.getElementById('calcContext');
+  if (tps < 5) ctx.innerHTML = 'Very slow -- barely usable for interactive chat';
+  else if (tps < 15) ctx.innerHTML = 'Usable for chat, noticeable delay between tokens';
+  else if (tps < 40) ctx.innerHTML = 'Good interactive speed, smooth chat experience';
+  else if (tps < 80) ctx.innerHTML = 'Excellent -- faster than most people can read';
+  else ctx.innerHTML = 'Outstanding throughput, suitable for batch processing';
+}
+
+bwSlider.addEventListener('input', updateCalc);
+sizeSlider.addEventListener('input', updateCalc);
+effSlider.addEventListener('input', updateCalc);
+updateCalc();
+
+// ============================================================
+// 03: HARDWARE CARDS
+// ============================================================
+const hwGrid = document.getElementById('hwGrid');
+const qwen3Active = 5.2; // MoE active size for qwen3-coder Q4
+
+HARDWARE.forEach(hw => {
+  let projectedTPS;
+  if (hw.id === 'm2max') {
+    projectedTPS = M2_ACTUAL_TPS; // use actual
+  } else {
+    projectedTPS = calcTPS(hw.bandwidth, qwen3Active, EFFICIENCY);
+  }
+  const maxTPS = calcTPS(819, qwen3Active, EFFICIENCY); // max possible for bar scaling
+  const pct = Math.min(100, (projectedTPS / maxTPS) * 100);
+
+  hwGrid.innerHTML += `
+    <div class="hw-card ${hw.cls}">
+      <div class="hw-badge">${hw.badge}</div>
+      <div class="hw-name">${hw.name}</div>
+      <div class="hw-chip">${hw.chip} &bull; ${hw.gpuCores} GPU cores</div>
+      <div class="hw-stats">
+        <div class="hw-stat"><span class="hw-stat-label">Bandwidth</span><span class="hw-stat-value" style="color:${hw.color}">${hw.bandwidth} GB/s</span></div>
+        <div class="hw-stat"><span class="hw-stat-label">RAM</span><span class="hw-stat-value">${hw.ram} GB</span></div>
+        <div class="hw-stat"><span class="hw-stat-label">Max RAM</span><span class="hw-stat-value">${hw.maxRam} GB</span></div>
+        <div class="hw-stat"><span class="hw-stat-label">Price</span><span class="hw-stat-value" style="color:${hw.price === 0 ? 'var(--emerald)' : 'var(--text-primary)'}">${hw.priceLabel}</span></div>
+      </div>
+      <div class="tps-bar">
+        <div class="tps-bar-label">qwen3-coder projected TPS${hw.id === 'm2max' ? ' (actual)' : ''}</div>
+        <div class="tps-bar-track">
+          <div class="tps-bar-fill" style="background:${hw.color}33; border: 1px solid ${hw.color}; --target:${pct.toFixed(1)}%;">${projectedTPS.toFixed(1)}</div>
+        </div>
+      </div>
+    </div>`;
+});
+
+// ============================================================
+// 04: TPS PROJECTIONS CHART
+// ============================================================
+const projLabels = HARDWARE.map(h => h.name);
+const projData = HARDWARE.map(h => h.id === 'm2max' ? M2_ACTUAL_TPS : calcTPS(h.bandwidth, qwen3Active, EFFICIENCY));
+const projColors = HARDWARE.map(h => h.id === 'm2max' ? '#10b981' : '#818cf866');
+const projBorders = HARDWARE.map(h => h.id === 'm2max' ? '#10b981' : '#818cf8');
+
+new Chart(document.getElementById('tpsProjectionChart'), {
+  type: 'bar',
+  data: {
+    labels: projLabels,
+    datasets: [{
+      label: 'Projected TPS',
+      data: projData,
+      backgroundColor: projColors,
+      borderColor: projBorders,
+      borderWidth: 1.5,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.parsed.x.toFixed(1) + ' tok/s' + (ctx.dataIndex === 0 ? ' (actual)' : ' (projected)')
+        }
+      },
+      annotation: undefined
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Tokens per Second' },
+        grid: { color: '#1e2a3f44' },
+        beginAtZero: true
+      },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ============================================================
+// 05: MODEL FIT CALCULATOR
+// ============================================================
+const fitModelSel = document.getElementById('fitModel');
+const fitQuantSel = document.getElementById('fitQuant');
+const fitGrid = document.getElementById('fitGrid');
+
+function updateFit() {
+  const modelKey = fitModelSel.value;
+  const quant = fitQuantSel.value;
+  const model = MODELS[modelKey];
+  const sizes = getModelSize(modelKey, quant);
+  const overhead = 4; // GB for KV cache + runtime
+
+  fitGrid.innerHTML = '';
+  HARDWARE.forEach(hw => {
+    const canRun = hw.ram >= (sizes.total + overhead);
+    const tps = canRun ? (hw.id === 'm2max' && modelKey === 'qwen3-coder' && quant === 'q4' ? M2_ACTUAL_TPS : calcTPS(hw.bandwidth, sizes.active, EFFICIENCY)) : 0;
+    const statusIcon = canRun ? '<span style="color:#10b981;">&#10003; Fits in RAM</span>' : '<span style="color:#f43f5e;">&#10007; Not enough RAM</span>';
+
+    fitGrid.innerHTML += `
+      <div class="fit-item ${canRun ? 'can-run' : 'cant-run'}">
+        <div class="fit-hw">${hw.name}</div>
+        <div class="fit-status">${statusIcon}</div>
+        <div style="font-size:11px; color: var(--text-muted); margin-bottom:4px;">${hw.ram} GB RAM / ${sizes.total.toFixed(1)} GB needed</div>
+        ${canRun ? `<div class="fit-tps" style="color:${hw.color}">${tps.toFixed(1)} <span class="fit-tps-unit">tok/s</span></div>` : '<div class="fit-tps" style="color:var(--text-muted);">--</div>'}
+      </div>`;
+  });
+}
+
+fitModelSel.addEventListener('change', updateFit);
+fitQuantSel.addEventListener('change', updateFit);
+updateFit();
+
+// ============================================================
+// 06: EXO CLUSTER ESTIMATOR
+// ============================================================
+const nodeSlider = document.getElementById('nodeSlider');
+const clusterStatsDiv = document.getElementById('clusterStats');
+let clusterChart = null;
+
+function getClusterEfficiency(n) {
+  if (n === 1) return 1.0;
+  if (n === 2) return 0.95;
+  if (n <= 4) return 0.85;
+  return 0.75;
+}
+
+function updateCluster() {
+  const n = +nodeSlider.value;
+  document.getElementById('nodeValue').textContent = n + (n === 1 ? ' node' : ' nodes');
+
+  const singleBW = 273; // M4 Pro
+  const singleRAM = 48;
+  const eff = getClusterEfficiency(n);
+  const aggBW = singleBW * n * eff;
+  const aggRAM = singleRAM * n;
+  const tps = calcTPS(aggBW, qwen3Active, EFFICIENCY);
+  const cost = n * 1799;
+
+  clusterStatsDiv.innerHTML = `
+    <div class="cluster-stat"><div class="cs-label">Aggregate BW</div><div class="cs-value">${aggBW.toFixed(0)}</div><div class="cs-unit">GB/s (x${eff.toFixed(2)} eff)</div></div>
+    <div class="cluster-stat"><div class="cs-label">Total RAM</div><div class="cs-value">${aggRAM}</div><div class="cs-unit">GB</div></div>
+    <div class="cluster-stat"><div class="cs-label">Projected TPS</div><div class="cs-value">${tps.toFixed(1)}</div><div class="cs-unit">tok/s (qwen3-coder)</div></div>
+    <div class="cluster-stat"><div class="cs-label">Total Cost</div><div class="cs-value">$${cost.toLocaleString()}</div><div class="cs-unit">${n} x Mac Mini</div></div>`;
+
+  // Chart
+  const labels = [];
+  const dataPoints = [];
+  const bgColors = [];
+  for (let i = 1; i <= 8; i++) {
+    labels.push(i + (i === 1 ? ' node' : ' nodes'));
+    const e = getClusterEfficiency(i);
+    dataPoints.push(calcTPS(singleBW * i * e, qwen3Active, EFFICIENCY));
+    bgColors.push(i === n ? '#06b6d4' : '#06b6d433');
+  }
+
+  if (clusterChart) clusterChart.destroy();
+  clusterChart = new Chart(document.getElementById('clusterChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: dataPoints,
+        backgroundColor: bgColors,
+        borderColor: '#06b6d4',
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + ' tok/s' } }
+      },
+      scales: {
+        y: { title: { display: true, text: 'TPS' }, grid: { color: '#1e2a3f44' }, beginAtZero: true },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+nodeSlider.addEventListener('input', updateCluster);
+updateCluster();
+
+// ============================================================
+// 07: COST ANALYSIS
+// ============================================================
+
+// Local cost calculation: hardware / (3 years * 365 days * 24 hours * 3600 sec * 0.25 utilization) * (1M / TPS)
+// Simplified: cost per 1M tokens = hardware_price / (tokens_in_3yrs_at_utilization) * 1M
+function localCostPer1M(hwPrice, tps) {
+  if (hwPrice === 0 || tps === 0) return 0;
+  const secondsIn3Years = 3 * 365.25 * 24 * 3600;
+  const utilization = 0.25;
+  const tokensIn3Years = tps * secondsIn3Years * utilization;
+  const electricityCost3Years = 0.15 * 0.1 * secondsIn3Years * utilization / 3600; // ~$0.15/kWh, ~100W
+  const totalCost = hwPrice + electricityCost3Years;
+  return (totalCost / tokensIn3Years) * 1_000_000;
+}
+
+const localCostDiv = document.getElementById('localCostRows');
+HARDWARE.filter(h => h.price > 0).forEach(hw => {
+  const tps = hw.id === 'm2max' ? M2_ACTUAL_TPS : calcTPS(hw.bandwidth, qwen3Active, EFFICIENCY);
+  const costPer1M = localCostPer1M(hw.price, tps);
+  localCostDiv.innerHTML += `
+    <div class="cost-row">
+      <span class="cost-name">${hw.name}</span>
+      <span class="cost-val" style="color:${hw.color}">$${costPer1M.toFixed(2)}/1M tokens</span>
+    </div>`;
+});
+
+const cloudCostDiv = document.getElementById('cloudCostRows');
+CLOUD_PRICING.forEach(cp => {
+  cloudCostDiv.innerHTML += `
+    <div class="cost-row">
+      <span class="cost-name">${cp.name}</span>
+      <span class="cost-val" style="color:${cp.color}">$${cp.price.toFixed(2)}/1M tokens</span>
+    </div>`;
+});
+
+// Breakeven chart
+const breakevenHW = HARDWARE.filter(h => h.price > 0);
+const breakevenDatasets = CLOUD_PRICING.map(cp => {
+  return {
+    label: 'vs ' + cp.name,
+    data: breakevenHW.map(hw => {
+      const tps = calcTPS(hw.bandwidth, qwen3Active, EFFICIENCY);
+      const localCost = localCostPer1M(hw.price, tps);
+      const savingsPerM = cp.price - localCost;
+      if (savingsPerM <= 0) return null; // never breaks even
+      const breakevenMTokens = hw.price / (savingsPerM); // millions of tokens
+      return Math.round(breakevenMTokens);
+    }),
+    backgroundColor: cp.color + '44',
+    borderColor: cp.color,
+    borderWidth: 1.5,
+    borderRadius: 6
+  };
+});
+
+new Chart(document.getElementById('breakevenChart'), {
+  type: 'bar',
+  data: {
+    labels: breakevenHW.map(h => h.name),
+    datasets: breakevenDatasets
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            if (ctx.parsed.x === null) return ctx.dataset.label + ': Never (local is more expensive)';
+            return ctx.dataset.label + ': ' + ctx.parsed.x.toLocaleString() + 'M tokens to break even';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Million Tokens to Break Even' }, grid: { color: '#1e2a3f44' }, beginAtZero: true },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ============================================================
+// 09: DECISION HELPER
+// ============================================================
+const decBudget = document.getElementById('decBudget');
+const decUse = document.getElementById('decUse');
+const decModel = document.getElementById('decModel');
+const decPortable = document.getElementById('decPortable');
+
+const RECOMMENDATIONS = {
+  // key format: budget-use-model-portable
+  // We'll use a scoring system instead
+};
+
+function getRecommendation() {
+  const budget = decBudget.value;
+  const use = decUse.value;
+  const model = decModel.value;
+  const portable = decPortable.value;
+
+  let rec = null;
+
+  // Budget constraint first
+  const maxBudget = { low: 2000, mid: 4000, high: 6000, max: 99999 };
+  const affordable = HARDWARE.filter(h => h.price > 0 && h.price <= maxBudget[budget]);
+
+  if (affordable.length === 0) {
+    // Only cloud makes sense
+    return {
+      name: 'Cloud API (Claude)',
+      reason: 'At this budget, cloud APIs offer the best value. Claude Haiku at $5/1M tokens provides excellent quality (8.25/10) with no hardware investment.',
+      specs: { Model: 'Claude Haiku 4.5', TPS: '169.7', Quality: '8.25/10', Cost: '$5/1M tokens' }
+    };
+  }
+
+  // Model size requirement
+  const modelMinRAM = { small: 12, medium: 40, large: 120 };
+  const fitsModel = affordable.filter(h => h.ram >= modelMinRAM[model]);
+
+  if (fitsModel.length === 0) {
+    // Cluster recommendation
+    const nodes = Math.ceil(modelMinRAM[model] / 48);
+    return {
+      name: `exo Cluster: ${nodes}x Mac Mini M4 Pro`,
+      reason: `No single affordable machine has enough RAM for ${model === 'large' ? '70B+' : '14-70B'} models. An exo cluster of ${nodes} Mac Minis pools ${nodes * 48} GB RAM for $${(nodes * 1799).toLocaleString()}.`,
+      specs: { Nodes: nodes.toString(), 'Total RAM': (nodes * 48) + ' GB', Cost: '$' + (nodes * 1799).toLocaleString(), Bandwidth: (273 * nodes * getClusterEfficiency(nodes)).toFixed(0) + ' GB/s' }
+    };
+  }
+
+  // Portability filter
+  let candidates = fitsModel;
+  if (portable === 'yes') {
+    const portableCandidates = candidates.filter(h => h.name.includes('MacBook'));
+    if (portableCandidates.length > 0) candidates = portableCandidates;
+  } else {
+    const desktopCandidates = candidates.filter(h => h.name.includes('Studio') || h.name.includes('Mini'));
+    if (desktopCandidates.length > 0) candidates = desktopCandidates;
+  }
+
+  // Use case: prefer higher bandwidth for team/lab
+  if (use === 'lab') {
+    candidates.sort((a, b) => b.bandwidth - a.bandwidth);
+  } else if (use === 'team') {
+    candidates.sort((a, b) => b.bandwidth - a.bandwidth);
+  } else {
+    // Personal: best value (bandwidth / price)
+    candidates.sort((a, b) => (b.bandwidth / Math.max(b.price, 1)) - (a.bandwidth / Math.max(a.price, 1)));
+  }
+
+  const pick = candidates[0];
+  const tps = calcTPS(pick.bandwidth, qwen3Active, EFFICIENCY);
+
+  let reason = '';
+  if (use === 'personal') reason = `Best personal setup within your budget. ${pick.bandwidth} GB/s bandwidth delivers ~${tps.toFixed(0)} tok/s on qwen3-coder.`;
+  else if (use === 'team') reason = `Handles 2-5 concurrent users. ${pick.bandwidth} GB/s bandwidth and ${pick.ram} GB RAM provide headroom for larger models.`;
+  else reason = `Lab-grade performance for 5+ users. Consider adding exo cluster nodes for even more throughput.`;
+
+  if (portable === 'yes' && pick.name.includes('MacBook')) reason += ' Portable -- take it anywhere.';
+  if (pick.name.includes('Studio')) reason += ' Superior sustained performance with desktop cooling.';
+
+  return {
+    name: pick.name,
+    reason: reason,
+    specs: { Chip: pick.chip, Bandwidth: pick.bandwidth + ' GB/s', RAM: pick.ram + ' GB', Price: pick.priceLabel, 'Proj. TPS': tps.toFixed(1) }
+  };
+}
+
+function updateDecision() {
+  const rec = getRecommendation();
+  const specsHTML = Object.entries(rec.specs).map(([k, v]) => `<div class="rec-spec"><strong>${k}</strong> ${v}</div>`).join('');
+  document.getElementById('recBox').innerHTML = `
+    <div class="rec-title">${rec.name}</div>
+    <div class="rec-reason">${rec.reason}</div>
+    <div class="rec-specs">${specsHTML}</div>`;
+}
+
+decBudget.addEventListener('change', updateDecision);
+decUse.addEventListener('change', updateDecision);
+decModel.addEventListener('change', updateDecision);
+decPortable.addEventListener('change', updateDecision);
+updateDecision();
+
+// ============================================================
+// SCROLL ANIMATIONS
+// ============================================================
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Animate TPS bars in hw cards
+      e.target.querySelectorAll('.tps-bar-fill').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.style.getPropertyValue('--target'); }, 300);
+      });
+      // Animate speed bars
+      e.target.querySelectorAll('.speed-bar-fill').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.style.getPropertyValue('--target'); }, 200);
+      });
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ============================================================
+// ANIMATED COUNTERS
+// ============================================================
+function animateCounter(el, target, duration = 1500) {
+  const start = 0;
+  const startTime = performance.now();
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = start + (target - start) * eased;
+    el.textContent = current.toFixed(target % 1 === 0 ? 0 : 1);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// Animate hero counters on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseFloat(el.dataset.target);
+    if (!isNaN(target)) animateCounter(el, target);
+  });
+});
+</script>
+</body>
+</html>

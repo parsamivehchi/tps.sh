@@ -1,0 +1,119 @@
+category: tool_calling
+label: "Tool Calling / Agentic"
+description: "Structured output, function calls, and multi-step tool use"
+prompts:
+  - id: tc_weather_email
+    title: "Multi-Tool Weather + Email"
+    system: "You are an AI assistant with access to tools. You MUST use the tools provided to fulfill the request. Respond with a structured plan showing which tools to call and in what order."
+    prompt: |
+      You have access to these tools:
+
+      ```json
+      [
+        {
+          "name": "get_weather",
+          "description": "Get current weather for a city",
+          "parameters": {"city": "string", "units": "celsius|fahrenheit"}
+        },
+        {
+          "name": "send_email",
+          "description": "Send an email",
+          "parameters": {"to": "string", "subject": "string", "body": "string"}
+        },
+        {
+          "name": "get_calendar",
+          "description": "Get calendar events for a date",
+          "parameters": {"date": "string (YYYY-MM-DD)"}
+        }
+      ]
+      ```
+
+      User request: "Check the weather in Toronto and Vancouver, then email me a comparison
+      at john@example.com. Also check my calendar for tomorrow and include any outdoor events
+      that might be affected by weather."
+
+      Provide:
+      1. A step-by-step execution plan
+      2. The exact tool calls you would make (as JSON)
+      3. How you would combine the results
+      4. The final email content you would generate
+
+  - id: tc_db_query_report
+    title: "Database Query + Report Generation"
+    system: "You are a data analyst assistant with access to tools. Show your complete reasoning and tool usage."
+    prompt: |
+      You have access to these tools:
+
+      ```json
+      [
+        {
+          "name": "execute_sql",
+          "description": "Execute a SQL query against the company database",
+          "parameters": {"query": "string", "database": "sales|inventory|hr"}
+        },
+        {
+          "name": "create_chart",
+          "description": "Create a chart from data",
+          "parameters": {"type": "bar|line|pie", "title": "string", "data": "array", "x_label": "string", "y_label": "string"}
+        },
+        {
+          "name": "generate_pdf",
+          "description": "Generate a PDF report",
+          "parameters": {"title": "string", "sections": "array of {heading, content, chart_id?}"}
+        }
+      ]
+      ```
+
+      User request: "Generate a quarterly sales report for Q4 2024. I need total revenue by
+      product category, month-over-month growth, top 10 salespeople, and any products with
+      declining sales. Include charts and export as PDF."
+
+      Show the complete sequence of tool calls with actual SQL queries, chart configurations,
+      and the final PDF structure.
+
+  - id: tc_code_review_agent
+    title: "Read + Test + Commit Agent"
+    system: "You are a code review agent. Show structured tool usage for the entire workflow."
+    prompt: |
+      You have access to these tools:
+
+      ```json
+      [
+        {
+          "name": "read_file",
+          "description": "Read a file from the repository",
+          "parameters": {"path": "string"}
+        },
+        {
+          "name": "write_file",
+          "description": "Write content to a file",
+          "parameters": {"path": "string", "content": "string"}
+        },
+        {
+          "name": "run_tests",
+          "description": "Run test suite",
+          "parameters": {"test_path": "string", "verbose": "boolean"}
+        },
+        {
+          "name": "git_commit",
+          "description": "Create a git commit",
+          "parameters": {"message": "string", "files": "array of string"}
+        },
+        {
+          "name": "static_analysis",
+          "description": "Run linting and type checking",
+          "parameters": {"path": "string", "tools": "array of string (eslint|prettier|mypy|ruff)"}
+        }
+      ]
+      ```
+
+      User request: "Review the file src/auth/login.py, fix any issues you find, make sure
+      tests pass, and commit the changes."
+
+      Show your complete agent loop:
+      1. Read and analyze the file
+      2. Identify issues (invent realistic bugs)
+      3. Write the fixed version
+      4. Run static analysis
+      5. Run tests (show handling both pass and fail scenarios)
+      6. Commit with a descriptive message

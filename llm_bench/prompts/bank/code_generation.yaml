@@ -1,0 +1,44 @@
+category: code_generation
+label: "Code Generation"
+description: "Write functions, components, and APIs from scratch"
+prompts:
+  - id: cg_binary_search
+    title: "Binary Search with Tests"
+    system: "You are a senior software engineer. Write clean, well-tested code."
+    prompt: |
+      Write a Python function `binary_search(arr, target)` that performs binary search
+      on a sorted list. It should return the index of the target if found, or -1 if not found.
+
+      Also write at least 5 unit tests using pytest that cover:
+      - Target found at beginning, middle, end
+      - Target not found
+      - Empty list
+      - Single element list
+      - Duplicate elements
+
+  - id: cg_react_datatable
+    title: "React DataTable Component"
+    system: "You are a senior frontend engineer. Write clean TypeScript React code."
+    prompt: |
+      Create a reusable React DataTable component in TypeScript with the following features:
+
+      1. Accept generic typed data via props
+      2. Sortable columns (click header to toggle asc/desc)
+      3. Pagination (configurable page size)
+      4. Search/filter across all columns
+      5. Loading and empty states
+
+      Include the component, its types, and a usage example with sample data.
+
+  - id: cg_fastapi_crud
+    title: "FastAPI CRUD API"
+    system: "You are a backend engineer specializing in Python APIs."
+    prompt: |
+      Build a complete FastAPI CRUD API for a "Task" resource with the following:
+
+      - Pydantic models: TaskCreate, TaskUpdate, TaskResponse
+      - Fields: id (UUID), title (str), description (optional str), status (enum: todo/in_progress/done), created_at, updated_at
+      - Endpoints: POST /tasks, GET /tasks (with pagination), GET /tasks/{id}, PUT /tasks/{id}, DELETE /tasks/{id}
+      - In-memory storage (dict)
+      - Proper error handling with HTTPException
+      - Include example requests/responses in docstrings

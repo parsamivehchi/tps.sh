@@ -1,0 +1,189 @@
+category: refactoring
+label: "Refactoring"
+description: "Improve existing code structure and performance"
+prompts:
+  - id: rf_god_function
+    title: "God Function to Modules"
+    system: "You are a refactoring expert. Apply SOLID principles."
+    prompt: |
+      Refactor this god function into well-structured, single-responsibility modules:
+
+      ```python
+      def process_order(order_data):
+          # Validate
+          if not order_data.get('items'):
+              return {'error': 'No items'}
+          if not order_data.get('customer_email'):
+              return {'error': 'No email'}
+          for item in order_data['items']:
+              if item['quantity'] <= 0:
+                  return {'error': f'Invalid quantity for {item["name"]}'}
+              if item['price'] < 0:
+                  return {'error': f'Invalid price for {item["name"]}'}
+
+          # Calculate totals
+          subtotal = sum(i['price'] * i['quantity'] for i in order_data['items'])
+          tax_rate = 0.13 if order_data.get('province') == 'ON' else 0.05
+          tax = subtotal * tax_rate
+          shipping = 0 if subtotal > 50 else 9.99
+          total = subtotal + tax + shipping
+
+          # Apply discount
+          if order_data.get('coupon_code'):
+              coupons = {'SAVE10': 0.10, 'SAVE20': 0.20, 'FLAT5': 5.0}
+              if order_data['coupon_code'] in coupons:
+                  discount = coupons[order_data['coupon_code']]
+                  if discount < 1:
+                      total = total * (1 - discount)
+                  else:
+                      total = total - discount
+
+          # Create order record
+          import uuid, datetime
+          order = {
+              'id': str(uuid.uuid4()),
+              'items': order_data['items'],
+              'subtotal': subtotal, 'tax': tax, 'shipping': shipping,
+              'total': round(total, 2),
+              'status': 'pending',
+              'created_at': datetime.datetime.now().isoformat()
+          }
+
+          # Send confirmation email
+          import smtplib
+          from email.mime.text import MIMEText
+          msg = MIMEText(f"Order {order['id']} confirmed. Total: ${order['total']}")
+          msg['Subject'] = 'Order Confirmation'
+          msg['From'] = 'orders@shop.com'
+          msg['To'] = order_data['customer_email']
+          try:
+              server = smtplib.SMTP('localhost')
+              server.send_message(msg)
+              server.quit()
+          except:
+              pass
+
+          return order
+      ```
+
+      Produce: separate modules/classes for validation, pricing, discounts, order creation,
+      and notification. Show the refactored code with clear interfaces between modules.
+
+  - id: rf_n_plus_one
+    title: "N+1 Query Fix"
+    system: "You are a database performance expert using SQLAlchemy."
+    prompt: |
+      This SQLAlchemy code has an N+1 query problem. Identify the issue, explain why it's slow,
+      and provide 3 different solutions (eager loading, subquery, manual join):
+
+      ```python
+      from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float
+      from sqlalchemy.orm import declarative_base, relationship, Session
+
+      Base = declarative_base()
+
+      class Author(Base):
+          __tablename__ = 'authors'
+          id = Column(Integer, primary_key=True)
+          name = Column(String)
+          books = relationship('Book', back_populates='author')
+
+      class Book(Base):
+          __tablename__ = 'books'
+          id = Column(Integer, primary_key=True)
+          title = Column(String)
+          price = Column(Float)
+          author_id = Column(Integer, ForeignKey('authors.id'))
+          author = relationship('Author', back_populates='books')
+          reviews = relationship('Review', back_populates='book')
+
+      class Review(Base):
+          __tablename__ = 'reviews'
+          id = Column(Integer, primary_key=True)
+          rating = Column(Integer)
+          comment = Column(String)
+          book_id = Column(Integer, ForeignKey('books.id'))
+          book = relationship('Book', back_populates='reviews')
+
+      def get_author_report(session: Session):
+          authors = session.query(Author).all()
+          report = []
+          for author in authors:
+              books_data = []
+              for book in author.books:
+                  avg_rating = sum(r.rating for r in book.reviews) / len(book.reviews) if book.reviews else 0
+                  books_data.append({
+                      'title': book.title,
+                      'price': book.price,
+                      'avg_rating': round(avg_rating, 2),
+                      'review_count': len(book.reviews)
+                  })
+              report.append({
+                  'author': author.name,
+                  'book_count': len(books_data),
+                  'total_revenue': sum(b['price'] for b in books_data),
+                  'books': books_data
+              })
+          return report
+      ```
+
+  - id: rf_callback_hell
+    title: "Callback Hell to Async/Await"
+    system: "You are a JavaScript/TypeScript modernization expert."
+    prompt: |
+      Convert this callback-hell Node.js code to clean async/await with proper error handling:
+
+      ```javascript
+      const fs = require('fs');
+      const https = require('https');
+
+      function processData(configPath, callback) {
+        fs.readFile(configPath, 'utf8', function(err, data) {
+          if (err) return callback(err);
+          let config;
+          try {
+            config = JSON.parse(data);
+          } catch(e) {
+            return callback(e);
+          }
+
+          https.get(config.apiUrl, function(res) {
+            let body = '';
+            res.on('data', function(chunk) { body += chunk; });
+            res.on('end', function() {
+              let apiData;
+              try {
+                apiData = JSON.parse(body);
+              } catch(e) {
+                return callback(e);
+              }
+
+              const results = apiData.items.map(function(item) {
+                return { id: item.id, name: item.name.toUpperCase(), processed: true };
+              });
+
+              fs.writeFile(config.outputPath, JSON.stringify(results, null, 2), function(err) {
+                if (err) return callback(err);
+
+                fs.readFile(config.outputPath, 'utf8', function(err, written) {
+                  if (err) return callback(err);
+                  const verified = JSON.parse(written);
+                  if (verified.length !== results.length) {
+                    return callback(new Error('Verification failed'));
+                  }
+                  callback(null, { count: results.length, path: config.outputPath });
+                });
+              });
+            });
+            res.on('error', function(err) { callback(err); });
+          }).on('error', function(err) { callback(err); });
+        });
+      }
+      ```
+
+      Requirements:
+      - Use fs/promises and native fetch (Node 18+)
+      - Add TypeScript types
+      - Add proper error handling with custom error classes
+      - Add input validation
+      - Add retry logic for the HTTP request
