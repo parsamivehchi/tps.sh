@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM-BENCH — Local vs Cloud LLM Benchmarking Toolkit</title>
+<meta name="description" content="Benchmark local Ollama models against Claude API on Apple Silicon. 7 models, 147 tests, 21 prompts across 7 coding categories.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050505;
+  --sidebar-bg: #000000;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --text-dimmer: #555;
+  --neon-pink: #ff00ff;
+  --neon-blue: #00ffff;
+  --neon-green: #00ff00;
+  --neon-yellow: #ffff00;
+  --card-bg: #0a0a0a;
+  --border: #333;
+  --border-dim: #1a1a1a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+body {
+  font-family: 'Roboto Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-dim);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.sidebar-logo .accent { color: var(--neon-blue); }
+
+.sidebar-sub {
+  font-size: 0.65rem;
+  color: var(--text-dimmer);
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+
+.sidebar-nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sidebar-nav a::before {
+  content: '> ';
+  color: var(--neon-pink);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.sidebar-nav a:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+}
+
+.sidebar-nav a:hover::before { opacity: 1; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-footer a {
+  color: var(--text-dimmer);
+  text-decoration: none;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+}
+
+.sidebar-footer a:hover { color: var(--neon-blue); }
+
+/* Main content */
+.main {
+  margin-left: 260px;
+  min-height: 100vh;
+}
+
+/* Sections */
+.section {
+  padding: 80px 60px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--neon-pink);
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.section-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  max-width: 640px;
+  margin-bottom: 40px;
+  line-height: 1.7;
+}
+
+/* Hero */
+.hero {
+  padding: 120px 60px 80px;
+  border-bottom: 1px solid var(--border-dim);
+  position: relative;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+}
+
+.hero-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--neon-green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+
+.hero h1 .accent {
+  color: var(--neon-blue);
+  text-shadow: 0 0 30px rgba(0,255,255,0.4), 0 0 60px rgba(0,255,255,0.1);
+}
+
+.hero-tagline {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  min-height: 1.6em;
+}
+
+.hero-tagline .cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  background: var(--neon-green);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.hero-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.meta-badge {
+  font-size: 0.7rem;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.meta-badge .val {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.meta-badge.green .val { color: var(--neon-green); }
+.meta-badge.blue .val { color: var(--neon-blue); }
+.meta-badge.pink .val { color: var(--neon-pink); }
+.meta-badge.yellow .val { color: var(--neon-yellow); }
+
+/* Results table */
+.results-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.results-table thead th {
+  background: #111;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dimmer);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+
+.results-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-dim);
+  color: var(--text-dim);
+}
+
+.results-table tbody tr:hover td {
+  background: rgba(255,255,255,0.02);
+}
+
+.results-table .model-name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.results-table .best {
+  font-weight: 700;
+}
+
+.bar-cell {
+  position: relative;
+  padding-right: 24px !important;
+}
+
+.bar-inline {
+  display: inline-block;
+  height: 4px;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 8px;
+  min-width: 4px;
+}
+
+.quality-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.quality-tag.high { background: rgba(0,255,0,0.1); color: var(--neon-green); }
+.quality-tag.mid { background: rgba(0,255,255,0.1); color: var(--neon-blue); }
+.quality-tag.low { background: rgba(255,0,255,0.1); color: var(--neon-pink); }
+
+.crown-icon { margin-right: 4px; }
+
+/* Card grids */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card-grid.cols-2 { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+.card {
+  padding: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-dim);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.card:hover {
+  border-color: var(--border);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255,0,255,0.08);
+}
+
+.card-icon {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.card h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.card .card-desc {
+  font-size: 0.73rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.card .card-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  color: var(--text-dimmer);
+  margin-top: 12px;
+}
+
+.card-accent-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+/* Prompt category cards */
+.cat-card {
+  padding: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-dim);
+  transition: all 0.25s ease;
+}
+
+.cat-card:hover {
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+
+.cat-card .cat-prefix {
+  font-size: 0.65rem;
+  color: var(--neon-pink);
+  margin-bottom: 6px;
+}
+
+.cat-card h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cat-card .cat-count {
+  font-size: 0.7rem;
+  color: var(--text-dimmer);
+}
+
+/* Finding cards */
+.finding-card {
+  padding: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-dim);
+  border-left: 2px solid var(--neon-blue);
+  transition: all 0.25s ease;
+}
+
+.finding-card:hover {
+  border-left-color: var(--neon-pink);
+  transform: translateY(-1px);
+}
+
+.finding-card h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.finding-card p {
+  font-size: 0.73rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.finding-card .finding-stat {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  color: var(--neon-green);
+}
+
+/* CLI section */
+.cli-block {
+  background: var(--card-bg);
+  border: 1px solid var(--border-dim);
+  padding: 28px;
+  overflow-x: auto;
+}
+
+.cli-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.cli-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.cli-dot.red { background: #ff5f57; }
+.cli-dot.yellow { background: #febc2e; }
+.cli-dot.green { background: #28c840; }
+
+.cli-title {
+  font-size: 0.7rem;
+  color: var(--text-dimmer);
+  margin-left: 8px;
+}
+
+.cli-line {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 0.75rem;
+  align-items: baseline;
+}
+
+.cli-prompt {
+  color: var(--neon-green);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.cli-cmd {
+  color: var(--neon-blue);
+  white-space: nowrap;
+}
+
+.cli-comment {
+  color: var(--text-dimmer);
+  font-size: 0.7rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Tech stack */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.tech-item {
+  padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-dim);
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.tech-item:hover {
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+
+.tech-item .tech-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.tech-item .tech-role {
+  font-size: 0.65rem;
+  color: var(--text-dimmer);
+}
+
+/* Footer */
+.footer {
+  padding: 40px 60px;
+  border-top: 1px solid var(--border-dim);
+  text-align: center;
+}
+
+.footer p {
+  font-size: 0.7rem;
+  color: var(--text-dimmer);
+  margin-bottom: 6px;
+}
+
+.footer a {
+  color: var(--neon-blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer a:hover { color: var(--neon-pink); }
+
+.footer .footer-stats {
+  font-size: 0.65rem;
+  color: var(--text-dimmer);
+  margin-top: 12px;
+  letter-spacing: 1px;
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Mobile hamburger */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .hamburger { display: block; }
+  .section, .hero { padding: 60px 24px; }
+  .footer { padding: 32px 24px; }
+  .card-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 1.8rem; }
+  .hero-meta { flex-direction: column; gap: 8px; }
+  .card-grid, .card-grid.cols-2, .card-grid.cols-3 { grid-template-columns: 1fr; }
+  .tech-grid { grid-template-columns: repeat(2, 1fr); }
+  .cli-line { flex-wrap: wrap; }
+  .cli-comment { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle navigation">[=]</button>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">LLM<span class="accent">-</span>BENCH</div>
+  <div class="sidebar-sub">benchmarking toolkit</div>
+
+  <div class="sidebar-nav">
+    <a href="#hero" onclick="closeSidebar()">Home</a>
+    <a href="#results" onclick="closeSidebar()">Results</a>
+    <a href="#architecture" onclick="closeSidebar()">Architecture</a>
+    <a href="#categories" onclick="closeSidebar()">Prompt Categories</a>
+    <a href="#findings" onclick="closeSidebar()">Key Findings</a>
+    <a href="#cli" onclick="closeSidebar()">CLI Commands</a>
+    <a href="#stack" onclick="closeSidebar()">Tech Stack</a>
+  </div>
+
+  <div class="sidebar-footer">
+    <a href="https://github.com/parsamivehchi/LLM-BENCH" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+      GitHub
+    </a>
+    <a href="../comparison/" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      Interactive Results
+    </a>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      147 TESTS COMPLETE
+    </div>
+    <h1>LLM<span class="accent">-</span>BENCH</h1>
+    <div class="hero-tagline">
+      <span id="typed"></span><span class="cursor"></span>
+    </div>
+    <div class="hero-meta">
+      <div class="meta-badge green"><span class="val">7</span> Models</div>
+      <div class="meta-badge blue"><span class="val">147</span> Tests</div>
+      <div class="meta-badge pink"><span class="val">21</span> Prompts</div>
+      <div class="meta-badge yellow"><span class="val">$3.95</span> Total Cost</div>
+      <div class="meta-badge"><span class="val">M2 Max</span> Hardware</div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="section" id="results">
+    <div class="section-label reveal">01 / RESULTS</div>
+    <div class="section-title reveal">Benchmark Results</div>
+    <div class="section-desc reveal">All 7 models compared across speed, quality, and cost. 4 local Ollama models vs 3 Claude API models on Apple M2 Max with 32GB unified memory.</div>
+
+    <div class="results-table-wrap reveal">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Model</th>
+            <th>Type</th>
+            <th>TPS</th>
+            <th>TTFT</th>
+            <th>Avg Time</th>
+            <th>Quality</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="crown-icon">&#9889;</span></td>
+            <td class="model-name" style="color:#06b6d4">Claude Haiku 4.5</td>
+            <td>Cloud</td>
+            <td class="best" style="color:#06b6d4"><span class="bar-inline" style="width:100%;background:#06b6d4"></span>169.7</td>
+            <td class="best" style="color:#06b6d4">0.5s</td>
+            <td style="color:#06b6d4">16.6s</td>
+            <td><span class="quality-tag high">8.25</span></td>
+            <td>$0.28</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="model-name" style="color:#8b5cf6">Claude Sonnet 4.6</td>
+            <td>Cloud</td>
+            <td><span class="bar-inline" style="width:45%;background:#8b5cf6"></span>77.7</td>
+            <td>1.0s</td>
+            <td>39.9s</td>
+            <td><span class="quality-tag high">8.59</span></td>
+            <td>$0.93</td>
+          </tr>
+          <tr>
+            <td><span class="crown-icon">&#127942;</span></td>
+            <td class="model-name" style="color:#ec4899">Claude Opus 4.6</td>
+            <td>Cloud</td>
+            <td><span class="bar-inline" style="width:45%;background:#ec4899"></span>76.6</td>
+            <td>1.8s</td>
+            <td>40.4s</td>
+            <td class="best"><span class="quality-tag high">8.65</span></td>
+            <td>$1.48</td>
+          </tr>
+          <tr>
+            <td><span class="crown-icon">&#128081;</span></td>
+            <td class="model-name" style="color:#10b981">qwen3-coder</td>
+            <td>Local</td>
+            <td><span class="bar-inline" style="width:28%;background:#10b981"></span>48.8</td>
+            <td>1.1s</td>
+            <td>37.8s</td>
+            <td><span class="quality-tag mid">7.48</span></td>
+            <td style="color:var(--neon-green)">Free</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="model-name" style="color:#3b82f6">qwen2.5-coder:14b</td>
+            <td>Local</td>
+            <td><span class="bar-inline" style="width:9%;background:#3b82f6"></span>15.6</td>
+            <td>1.5s</td>
+            <td>68.2s</td>
+            <td><span class="quality-tag mid">6.64</span></td>
+            <td style="color:var(--neon-green)">Free</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="model-name" style="color:#f59e0b">deepseek-r1:14b</td>
+            <td>Local</td>
+            <td><span class="bar-inline" style="width:8%;background:#f59e0b"></span>14.6</td>
+            <td>70.2s</td>
+            <td>137.0s</td>
+            <td><span class="quality-tag low">5.89</span></td>
+            <td style="color:var(--neon-green)">Free</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="model-name" style="color:#f43f5e">glm-4.7-flash</td>
+            <td>Local</td>
+            <td><span class="bar-inline" style="width:6%;background:#f43f5e"></span>10.2</td>
+            <td>54.8s</td>
+            <td>229.5s</td>
+            <td><span class="quality-tag low">5.30</span></td>
+            <td style="color:var(--neon-green)">Free</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid cols-3 reveal" style="margin-top: 24px;">
+      <div class="card" style="border-left: 2px solid var(--neon-blue);">
+        <div class="card-icon" style="color:var(--neon-blue)">&#9889;</div>
+        <h3>Fastest Model</h3>
+        <div class="card-desc">Claude Haiku 4.5 at 169.7 tok/s &mdash; 3.5x faster than the best local model. Best value cloud option at $0.28.</div>
+      </div>
+      <div class="card" style="border-left: 2px solid var(--neon-pink);">
+        <div class="card-icon" style="color:var(--neon-pink)">&#127942;</div>
+        <h3>Highest Quality</h3>
+        <div class="card-desc">Claude Opus 4.6 scores 8.65/10 &mdash; but Sonnet (8.59) nearly matches at 63% the cost. Diminishing returns at the top.</div>
+      </div>
+      <div class="card" style="border-left: 2px solid var(--neon-green);">
+        <div class="card-icon" style="color:var(--neon-green)">&#128081;</div>
+        <h3>Best Local</h3>
+        <div class="card-desc">qwen3-coder at 48.8 tok/s with 7.48 quality. MoE architecture shines on M2 Max. 100% offline, zero cost, air-gapped.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="section" id="architecture">
+    <div class="section-label reveal">02 / ARCHITECTURE</div>
+    <div class="section-title reveal">Benchmark Pipeline</div>
+    <div class="section-desc reveal">Four-stage pipeline: load prompts, execute against models, judge quality, generate reports.</div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(4, 1fr);" >
+      <div class="card reveal">
+        <div class="card-accent-top" style="background: var(--neon-pink);"></div>
+        <div class="card-icon">&#128196;</div>
+        <h3>Prompt Bank</h3>
+        <div class="card-desc">21 YAML prompts across 7 coding categories. Each defines task, expected behavior, and evaluation criteria.</div>
+        <div class="card-tag">21 prompts &middot; 7 categories</div>
+      </div>
+      <div class="card reveal">
+        <div class="card-accent-top" style="background: var(--neon-blue);"></div>
+        <div class="card-icon">&#9881;</div>
+        <h3>Runner</h3>
+        <div class="card-desc">Executes prompts against Ollama (local) and Anthropic API (cloud). Captures TPS, TTFT, tokens, cost, and hardware metrics.</div>
+        <div class="card-tag">Ollama + Anthropic adapters</div>
+      </div>
+      <div class="card reveal">
+        <div class="card-accent-top" style="background: var(--neon-green);"></div>
+        <div class="card-icon">&#9878;</div>
+        <h3>Judge</h3>
+        <div class="card-desc">Claude Sonnet 4.6 scores each output on correctness (40%), completeness (35%), and clarity (25%). Bias-flagged for self-evaluation.</div>
+        <div class="card-tag">weighted scoring &middot; bias flags</div>
+      </div>
+      <div class="card reveal">
+        <div class="card-accent-top" style="background: var(--neon-yellow);"></div>
+        <div class="card-icon">&#128202;</div>
+        <h3>Reports</h3>
+        <div class="card-desc">Word docs, PowerPoint decks, React dashboard, and interactive comparison website. Full export pipeline.</div>
+        <div class="card-tag">docx + pptx + React + web</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Prompt Categories -->
+  <section class="section" id="categories">
+    <div class="section-label reveal">03 / PROMPT CATEGORIES</div>
+    <div class="section-title reveal">7 Coding Task Types</div>
+    <div class="section-desc reveal">Each category contains 3 prompts of varying complexity, testing different aspects of code intelligence.</div>
+
+    <div class="card-grid reveal" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat code_generation.yaml</div>
+        <h4>Code Generation</h4>
+        <div class="cat-count">3 prompts &middot; Write new code from spec</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat debugging_reasoning.yaml</div>
+        <h4>Debugging & Reasoning</h4>
+        <div class="cat-count">3 prompts &middot; Find and fix bugs</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat refactoring.yaml</div>
+        <h4>Refactoring</h4>
+        <div class="cat-count">3 prompts &middot; Improve existing code</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat explanation_teaching.yaml</div>
+        <h4>Explanation & Teaching</h4>
+        <div class="cat-count">3 prompts &middot; Explain concepts clearly</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat short_quick.yaml</div>
+        <h4>Short Quick Tasks</h4>
+        <div class="cat-count">3 prompts &middot; Fast utility tasks</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat long_complex.yaml</div>
+        <h4>Long Complex Research</h4>
+        <div class="cat-count">3 prompts &middot; Deep architecture tasks</div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-prefix">$ cat tool_calling.yaml</div>
+        <h4>Tool Calling / Agentic</h4>
+        <div class="cat-count">3 prompts &middot; Agentic tool use</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Findings -->
+  <section class="section" id="findings">
+    <div class="section-label reveal">04 / KEY FINDINGS</div>
+    <div class="section-title reveal">What 147 Tests Reveal</div>
+    <div class="section-desc reveal">The data tells a nuanced story about local vs cloud tradeoffs.</div>
+
+    <div class="card-grid cols-2 reveal">
+      <div class="finding-card">
+        <h4>Cloud wins on quality, but diminishing returns at the top</h4>
+        <p>All 3 Claude models score 8.25+. Opus (8.65) barely edges Sonnet (8.59), making Sonnet the smart buy at 63% the cost. The quality gap between best local (7.48) and worst cloud (8.25) is meaningful at scale.</p>
+        <span class="finding-stat">+0.77 quality gap</span>
+      </div>
+      <div class="finding-card">
+        <h4>MoE architecture dominates local inference</h4>
+        <p>qwen3-coder (30B MoE) runs at 48.8 tok/s vs qwen2.5-coder (14B dense) at 15.6 tok/s &mdash; 3.1x faster despite being 2x larger. MoE activates fewer parameters per token, leveraging M2 Max memory bandwidth more efficiently.</p>
+        <span class="finding-stat">3.1x speed advantage</span>
+      </div>
+      <div class="finding-card">
+        <h4>Claude-judging-Claude bias caveat</h4>
+        <p>62 of 147 quality scores involve Claude models judging Claude outputs. These are flagged in all reports but may inflate cloud scores. A fair comparison would need an independent judge (GPT-4 or human reviewers).</p>
+        <span class="finding-stat">62/147 flagged</span>
+      </div>
+      <div class="finding-card">
+        <h4>Total cost: $3.95 for the entire benchmark</h4>
+        <p>Cloud benchmark run: $2.69. Quality judging via Sonnet: $1.26. That's 147 tests across 7 models including full quality scoring. Local models contribute zero to the bill.</p>
+        <span class="finding-stat">$3.95 all-in</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLI Commands -->
+  <section class="section" id="cli">
+    <div class="section-label reveal">05 / CLI</div>
+    <div class="section-title reveal">Command-Line Interface</div>
+    <div class="section-desc reveal">8 Typer commands for the full benchmark lifecycle. Run, judge, analyze, report, export.</div>
+
+    <div class="cli-block reveal">
+      <div class="cli-header">
+        <span class="cli-dot red"></span>
+        <span class="cli-dot yellow"></span>
+        <span class="cli-dot green"></span>
+        <span class="cli-title">llm-bench &mdash; terminal</span>
+      </div>
+
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench run</span>
+        <span class="cli-comment"># Run benchmarks against all models</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench run --hardware-metrics</span>
+        <span class="cli-comment"># With GPU/thermal capture</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench run -m qwen3-coder -c code_generation</span>
+        <span class="cli-comment"># Filter by model and category</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench judge &lt;run_id&gt;</span>
+        <span class="cli-comment"># Score outputs with Claude Sonnet</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench analyze &lt;run_id&gt;</span>
+        <span class="cli-comment"># Generate analysis and rankings</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench report &lt;run_id&gt;</span>
+        <span class="cli-comment"># Generate Word + PowerPoint reports</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench export &lt;run_id&gt;</span>
+        <span class="cli-comment"># Export dashboard-ready JSON</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench hardware-report</span>
+        <span class="cli-comment"># Generate hardware infrastructure guide</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench cost-estimate</span>
+        <span class="cli-comment"># Estimate cost for a full run</span>
+      </div>
+      <div class="cli-line">
+        <span class="cli-prompt">$</span>
+        <span class="cli-cmd">python -m llm_bench list-runs</span>
+        <span class="cli-comment"># List all benchmark runs</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="section" id="stack">
+    <div class="section-label reveal">06 / TECH STACK</div>
+    <div class="section-title reveal">Built With</div>
+    <div class="section-desc reveal">Python-first toolkit with React dashboard and interactive comparison websites.</div>
+
+    <div class="tech-grid reveal">
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-blue)">Python + Typer</div>
+        <div class="tech-role">CLI framework</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-green)">Ollama</div>
+        <div class="tech-role">Local model runtime</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-pink)">Anthropic API</div>
+        <div class="tech-role">Cloud model access</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-blue)">React + Recharts</div>
+        <div class="tech-role">Dashboard UI</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-yellow)">Chart.js</div>
+        <div class="tech-role">Comparison website charts</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-green)">python-docx</div>
+        <div class="tech-role">Word report generation</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name" style="color:var(--neon-pink)">python-pptx</div>
+        <div class="tech-role">PowerPoint generation</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-name">Rich</div>
+        <div class="tech-role">Terminal output</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p><a href="https://github.com/parsamivehchi/LLM-BENCH">github.com/parsamivehchi/LLM-BENCH</a></p>
+    <p>Built for Apple Silicon &middot; February 2026</p>
+    <div class="footer-stats">7 models &middot; 147 tests &middot; 21 prompts &middot; 7 categories</div>
+  </footer>
+
+</div>
+
+<script>
+// Typing animation
+const phrases = [
+  'Local vs Cloud LLM Benchmarking Toolkit',
+  '7 models. 147 tests. One verdict.',
+  'Ollama + Anthropic on Apple Silicon',
+  'Speed, quality, and cost compared.'
+];
+let phraseIndex = 0, charIndex = 0, deleting = false;
+const typedEl = document.getElementById('typed');
+
+function typeLoop() {
+  const current = phrases[phraseIndex];
+  if (!deleting) {
+    typedEl.textContent = current.substring(0, charIndex + 1);
+    charIndex++;
+    if (charIndex === current.length) {
+      setTimeout(() => { deleting = true; typeLoop(); }, 2000);
+      return;
+    }
+    setTimeout(typeLoop, 50);
+  } else {
+    typedEl.textContent = current.substring(0, charIndex - 1);
+    charIndex--;
+    if (charIndex === 0) {
+      deleting = false;
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+      setTimeout(typeLoop, 400);
+      return;
+    }
+    setTimeout(typeLoop, 30);
+  }
+}
+typeLoop();
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Close sidebar on mobile nav click
+function closeSidebar() {
+  if (window.innerWidth <= 900) {
+    document.querySelector('.sidebar').classList.remove('open');
+  }
+}
+</script>
+</body>
+</html>
