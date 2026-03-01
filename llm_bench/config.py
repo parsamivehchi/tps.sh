@@ -1,4 +1,4 @@
-"""Model definitions, categories, and constants for LLM-Bench."""
+"""Model definitions, categories, and constants for tps.sh."""
 
 from pathlib import Path
 from dataclasses import dataclass

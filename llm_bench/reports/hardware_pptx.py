@@ -278,7 +278,7 @@ def generate_hardware_pptx() -> Path:
     _text(slide, Inches(0.8), Inches(3.5), Inches(11), Inches(0.8),
           "A Hardware Guide for Apple Silicon", size=24, color=RGBColor(0xCB, 0xD5, 0xE1))
     _text(slide, Inches(0.8), Inches(4.5), Inches(11), Inches(0.5),
-          f"LLM-Bench Phase 2  |  {datetime.now().strftime('%B %Y')}", size=14, color=MID_GRAY)
+          f"tps.sh Phase 2  |  {datetime.now().strftime('%B %Y')}", size=14, color=MID_GRAY)
     _text(slide, Inches(0.8), Inches(5.5), Inches(11), Inches(0.8),
           "Based on 147 real benchmarks across 7 models on M2 Max 32GB\n"
           "Memory bandwidth is the bottleneck — not GPU cores, not RAM size",
@@ -724,7 +724,7 @@ def generate_hardware_pptx() -> Path:
     steps = [
         "1. Order hardware (when ready)",
         "2. Run setup.sh on new machine",
-        "3. Run LLM-Bench with --hardware-metrics",
+        "3. Run tps.sh with --hardware-metrics",
         "4. Compare actual vs projected TPS",
         "5. Share results with team",
     ]
@@ -732,7 +732,7 @@ def generate_hardware_pptx() -> Path:
              steps, size=18, color=RGBColor(0xCB, 0xD5, 0xE1), spacing=Pt(12))
 
     _text(slide, Inches(0.8), Inches(6.5), Inches(10), Inches(0.5),
-          "LLM-Bench Phase 2 — On-Premise Infrastructure Guide",
+          "tps.sh Phase 2 — On-Premise Infrastructure Guide",
           size=13, color=MID_GRAY)
 
     # ── Save ──

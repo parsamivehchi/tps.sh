@@ -62,7 +62,7 @@ export function Dashboard({ data, filteredResults }: Props) {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.h1}>LLM-Bench Dashboard</h1>
+          <h1 style={styles.h1}>tps.sh Dashboard</h1>
           <p style={styles.subtitle}>
             Run: {data.meta.run_id} | {data.meta.total_tests} tests |{" "}
             {data.meta.model_count} models

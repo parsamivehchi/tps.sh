@@ -1,4 +1,4 @@
-"""Typer CLI for LLM-Bench."""
+"""Typer CLI for tps.sh."""
 
 import asyncio
 import json
@@ -11,7 +11,7 @@ from rich.table import Table
 
 from llm_bench.config import MODELS, CATEGORIES, CATEGORY_LABELS, RESULTS_DIR, SCORED_DIR, EXPORTS_DIR
 
-app = typer.Typer(name="llm-bench", help="LLM Benchmarking Toolkit — Local vs Cloud")
+app = typer.Typer(name="tps.sh", help="tps.sh — Tokens Per Second Benchmarking")
 console = Console()
 
 
