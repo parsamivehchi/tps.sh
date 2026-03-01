@@ -136,7 +136,7 @@ def _add_metric_card(slide, left, top, width, height, label, value, subtitle, ac
 
 
 def generate_pptx_report(run_id: str | None = None) -> Path:
-    """Generate polished LLM-Bench PowerPoint."""
+    """Generate polished tps.sh PowerPoint."""
     prs = Presentation()
     prs.slide_width = SLIDE_W
     prs.slide_height = SLIDE_H
@@ -156,7 +156,7 @@ def generate_pptx_report(run_id: str | None = None) -> Path:
         shape.line.fill.background()
 
     _add_text_box(slide, Inches(0.8), Inches(1.2), Inches(10), Inches(1.2),
-                  "LLM-Bench", font_size=52, color=WHITE, bold=True)
+                  "tps.sh", font_size=52, color=WHITE, bold=True)
     _add_text_box(slide, Inches(0.8), Inches(3.0), Inches(10), Inches(0.8),
                   "Local vs Cloud Model Benchmarking", font_size=24, color=RGBColor(0xCB, 0xD5, 0xE1))
 
@@ -449,7 +449,7 @@ def generate_pptx_report(run_id: str | None = None) -> Path:
     _add_text_box(slide, Inches(0.8), Inches(2.2), Inches(10), Inches(1),
                   "Thank You", font_size=44, color=WHITE, bold=True)
     _add_text_box(slide, Inches(0.8), Inches(4.2), Inches(10), Inches(0.5),
-                  "LLM-Bench — Open-source model benchmarking toolkit",
+                  "tps.sh — Tokens Per Second Benchmarking",
                   font_size=16, color=MID_GRAY)
     _add_text_box(slide, Inches(0.8), Inches(5.0), Inches(10), Inches(0.8),
                   "python -m llm_bench run  |  judge  |  analyze  |  report  |  export",

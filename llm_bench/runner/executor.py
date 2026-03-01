@@ -114,7 +114,7 @@ async def run_benchmark(
     total_tests = len(models) * len(prompts)
     results: list[ModelResponse] = []
 
-    console.print(f"\n[bold cyan]LLM-Bench Run: {run_id}[/]")
+    console.print(f"\n[bold cyan]tps.sh Run: {run_id}[/]")
     console.print(f"  Models: {len(models)} | Prompts: {len(prompts)} | Total tests: {total_tests}\n")
 
     # Save run metadata

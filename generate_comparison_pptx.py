@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate a polished comparison PowerPoint presentation for LLM Bench results.
+Generate a polished comparison PowerPoint presentation for tps.sh results.
 Run ID: 20260226_002903 | 84 tests | 4 local Ollama models x 21 prompts x 7 categories
 Hardware: Apple M2 Max, 32GB RAM
 """
@@ -483,7 +483,7 @@ def build_title_slide(prs, slide_num, total_slides):
 
     # title
     add_textbox(slide, Inches(1), Inches(1.6), Inches(11), Inches(1),
-                "LLM Bench: Local Model Comparison", font_size=40, bold=True, color=TEXT_WHITE)
+                "tps.sh: Local Model Comparison", font_size=40, bold=True, color=TEXT_WHITE)
 
     # subtitle
     add_textbox(slide, Inches(1), Inches(2.6), Inches(11), Inches(0.6),
@@ -659,7 +659,7 @@ def build_takeaways_slide(prs, slide_num, total_slides):
 
     # Footer
     add_textbox(slide, Inches(0.7), Inches(6.8), Inches(11), Inches(0.5),
-                "LLM Bench  |  Run 20260226_002903  |  Apple M2 Max 32GB  |  84 tests across 7 categories",
+                "tps.sh  |  Run 20260226_002903  |  Apple M2 Max 32GB  |  84 tests across 7 categories",
                 font_size=11, color=TEXT_MUTED, alignment=PP_ALIGN.CENTER)
 
     add_slide_number(slide, slide_num, total_slides)
