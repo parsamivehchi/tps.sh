@@ -29,10 +29,18 @@ class ModelDef:
 
 
 MODELS: list[ModelDef] = [
+    # Existing local models (Phase 1)
     ModelDef("qwen3-coder", "qwen3-coder:latest", "ollama", "30B MoE", 0, 0),
     ModelDef("qwen2.5-coder:14b", "qwen2.5-coder:14b", "ollama", "14B dense", 0, 0),
     ModelDef("deepseek-r1:14b", "deepseek-r1:14b", "ollama", "14B dense", 0, 0),
     ModelDef("glm-4.7-flash", "glm-4.7-flash:latest", "ollama", "~9B dense", 0, 0),
+    # New local models (Phase 3 — April 2026)
+    ModelDef("qwen2.5-coder:32b", "qwen2.5-coder:32b", "ollama", "32B dense", 0, 0),
+    ModelDef("qwen3:32b", "qwen3:32b", "ollama", "32B dense", 0, 0),
+    ModelDef("phi4:14b", "phi4:14b", "ollama", "14B dense", 0, 0),
+    ModelDef("gemma4:31b", "gemma4:31b", "ollama", "31B", 0, 0),
+    ModelDef("gemma4:26b", "gemma4:26b", "ollama", "26B", 0, 0),
+    # Cloud models
     ModelDef("Claude Haiku 4.5", "claude-haiku-4-5", "anthropic", "Cloud", 1.0, 5.0),
     ModelDef("Claude Sonnet 4.6", "claude-sonnet-4-6", "anthropic", "Cloud", 3.0, 15.0),
     ModelDef("Claude Opus 4.6", "claude-opus-4-6", "anthropic", "Cloud", 5.0, 25.0),
@@ -74,6 +82,10 @@ QUALITY_WEIGHTS = {
 # Ollama config
 OLLAMA_BASE_URL = "http://localhost:11434"
 OLLAMA_MAX_LOADED_MODELS = 1
+# Per-request context window. Benchmark prompts are small (<2k tokens), so 16k
+# is plenty of headroom. Keeping this low prevents massive KV cache allocation
+# that can slow prefill to >5min and cause aiohttp timeouts on 32B models.
+OLLAMA_NUM_CTX = 16384
 
 # Benchmark defaults
 DEFAULT_MAX_TOKENS = 4096

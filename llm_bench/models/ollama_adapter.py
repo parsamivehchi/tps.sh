@@ -5,7 +5,7 @@ import json
 import aiohttp
 
 from llm_bench.models.base import ModelAdapter, ModelResponse
-from llm_bench.config import OLLAMA_BASE_URL, WARMUP_PROMPT, WARMUP_MAX_TOKENS
+from llm_bench.config import OLLAMA_BASE_URL, WARMUP_PROMPT, WARMUP_MAX_TOKENS, OLLAMA_NUM_CTX
 
 
 class OllamaAdapter(ModelAdapter):
@@ -17,7 +17,11 @@ class OllamaAdapter(ModelAdapter):
 
     async def _get_session(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
+            # No total timeout — local LLM inference can legitimately take >5min
+            # for large models with thinking mode. Keep sock_connect short to fail
+            # fast if Ollama is down.
+            timeout = aiohttp.ClientTimeout(total=None, sock_connect=10, sock_read=None)
+            self._session = aiohttp.ClientSession(timeout=timeout)
         return self._session
 
     async def warmup(self) -> None:
@@ -27,7 +31,10 @@ class OllamaAdapter(ModelAdapter):
             "model": self.model_id,
             "messages": [{"role": "user", "content": WARMUP_PROMPT}],
             "stream": False,
-            "options": {"num_predict": WARMUP_MAX_TOKENS},
+            "options": {
+                "num_predict": WARMUP_MAX_TOKENS,
+                "num_ctx": OLLAMA_NUM_CTX,
+            },
         }
         async with session.post(f"{self.base_url}/api/chat", json=payload) as resp:
             await resp.read()
@@ -60,7 +67,10 @@ class OllamaAdapter(ModelAdapter):
             "model": self.model_id,
             "messages": messages,
             "stream": True,
-            "options": {"num_predict": max_tokens},
+            "options": {
+                "num_predict": max_tokens,
+                "num_ctx": OLLAMA_NUM_CTX,
+            },
         }
 
         output_chunks: list[str] = []

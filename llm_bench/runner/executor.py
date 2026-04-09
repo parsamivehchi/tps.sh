@@ -160,6 +160,26 @@ async def run_benchmark(
                                             hardware_monitor=hw_monitor if model.provider == "ollama" else None)
                 results.append(response)
 
+                # Always save per-prompt progress for live tracking (local AND cloud)
+                # Cloud results are already cached via save_to_cache in run_single,
+                # but local results aren't — so we write a progress.jsonl that covers both.
+                progress_line = json.dumps({
+                    "ts": datetime.now().isoformat(),
+                    "model_name": response.model_name,
+                    "model_provider": model.provider,
+                    "prompt_id": response.prompt_id,
+                    "category": response.category,
+                    "ttft_ms": response.ttft_ms,
+                    "total_time_ms": response.total_time_ms,
+                    "tokens_per_sec": response.tokens_per_sec,
+                    "input_tokens": response.input_tokens,
+                    "output_tokens": response.output_tokens,
+                    "cost_usd": response.cost_usd,
+                    "error": getattr(response, "error", None),
+                })
+                with (run_dir / "progress.jsonl").open("a") as f:
+                    f.write(progress_line + "\n")
+
                 # Status indicator
                 status = "[green]\u2713[/]" if not response.error else "[red]\u2717[/]"
                 progress.update(model_task, advance=1)
