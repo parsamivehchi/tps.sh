@@ -5,7 +5,7 @@ import json
 import aiohttp
 
 from llm_bench.models.base import ModelAdapter, ModelResponse
-from llm_bench.config import OLLAMA_BASE_URL, WARMUP_PROMPT, WARMUP_MAX_TOKENS, OLLAMA_NUM_CTX
+from llm_bench.config import OLLAMA_BASE_URL, WARMUP_PROMPT, WARMUP_MAX_TOKENS, OLLAMA_NUM_CTX, OLLAMA_KEEP_ALIVE, OLLAMA_NUM_BATCH
 
 
 class OllamaAdapter(ModelAdapter):
@@ -31,9 +31,11 @@ class OllamaAdapter(ModelAdapter):
             "model": self.model_id,
             "messages": [{"role": "user", "content": WARMUP_PROMPT}],
             "stream": False,
+            "keep_alive": OLLAMA_KEEP_ALIVE,
             "options": {
                 "num_predict": WARMUP_MAX_TOKENS,
                 "num_ctx": OLLAMA_NUM_CTX,
+                "num_batch": OLLAMA_NUM_BATCH,
             },
         }
         async with session.post(f"{self.base_url}/api/chat", json=payload) as resp:
@@ -67,9 +69,11 @@ class OllamaAdapter(ModelAdapter):
             "model": self.model_id,
             "messages": messages,
             "stream": True,
+            "keep_alive": OLLAMA_KEEP_ALIVE,
             "options": {
                 "num_predict": max_tokens,
                 "num_ctx": OLLAMA_NUM_CTX,
+                "num_batch": OLLAMA_NUM_BATCH,
             },
         }
 
