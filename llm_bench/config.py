@@ -86,6 +86,12 @@ OLLAMA_MAX_LOADED_MODELS = 1
 # is plenty of headroom. Keeping this low prevents massive KV cache allocation
 # that can slow prefill to >5min and cause aiohttp timeouts on 32B models.
 OLLAMA_NUM_CTX = 16384
+# Keep model loaded in VRAM indefinitely (-1 = never unload).
+# Prevents GPU utilization dips from model unload/reload cycles.
+OLLAMA_KEEP_ALIVE = -1
+# Batch size for prompt processing (prefill). Larger = faster TTFT.
+# M1 Max 64GB has plenty of headroom for 2048.
+OLLAMA_NUM_BATCH = 2048
 
 # Benchmark defaults
 DEFAULT_MAX_TOKENS = 4096
