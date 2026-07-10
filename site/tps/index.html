@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tps.sh - How fast is local, really? An honest LLM benchmark</title>
+  <meta name="description" content="Seven models, 147 tests, one honest benchmark. Local Ollama models versus the Claude API on Apple Silicon, measured across 21 coding prompts for speed, quality, and cost.">
+  <link rel="canonical" href="https://mivehchi.app/tps">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="tps.sh - How fast is local, really?">
+  <meta property="og:description" content="Seven models, 147 tests, one honest benchmark. Local Ollama versus Claude API on Apple Silicon, across 21 coding prompts.">
+  <meta property="og:url" content="https://mivehchi.app/tps">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/tps/styles.css">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('mv.theme');
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container">
+      <a class="wordmark" href="https://mivehchi.app">mivehchi<span class="dot">.</span>app</a>
+      <div class="topbar-right">
+        <a class="nav-link hide-sm" href="https://tps.sh">Live site</a>
+        <a class="nav-link" href="https://github.com/parsamivehchi/tps.sh">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" title="Toggle theme">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow">local vs cloud / apple silicon</div>
+        <h1>How fast is local, really? <span class="q">7 models, 147 tests,</span> one honest benchmark.</h1>
+        <p class="lede">A reproducible harness that runs local <strong>Ollama</strong> models against the <strong>Claude API</strong> on Apple Silicon, across 21 coding prompts in 7 categories. It measures tokens per second, time to first token, quality (scored by Claude Sonnet), and dollar cost, then writes the reports so the numbers are not just vibes.</p>
+        <div class="specstrip">
+          <div class="cell"><span class="k">Models</span><span class="v">7</span></div>
+          <div class="cell"><span class="k">Tests</span><span class="v">147</span></div>
+          <div class="cell"><span class="k">Prompts</span><span class="v">21 <span class="u">/ 7 cats</span></span></div>
+          <div class="cell"><span class="k">Hardware</span><span class="v">M2 Max <span class="u">32GB</span></span></div>
+          <div class="cell"><span class="k">Total cost</span><span class="v">$3.95</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS / BAR RACK -->
+    <section class="section" id="results">
+      <div class="container">
+        <div class="slabel">// results</div>
+        <h2>Throughput, sorted by tokens per second</h2>
+        <p class="sub">Bar length is tokens per second. The gap between cloud and local is the whole story: local is real and free, but on this machine it trails the API on raw speed.</p>
+
+        <div class="rack-legend">
+          <span><i class="swatch cloud"></i> Cloud (Claude API)</span>
+          <span><i class="swatch local"></i> Local (Ollama)</span>
+        </div>
+
+        <div class="rack" role="list" aria-label="Model throughput results">
+          <!-- Haiku -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">Claude Haiku 4.5</div><span class="badge cloud">cloud</span></div>
+            <div class="bar-track"><div class="bar-fill cloud" style="width:100%"></div><span class="bar-val">169.7</span></div>
+            <div class="bar-meta">TTFT <b>0.5s</b> · Q <b>8.25</b> · <b>$0.28</b></div>
+          </div>
+          <!-- Sonnet -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">Claude Sonnet 4.6</div><span class="badge cloud">cloud</span></div>
+            <div class="bar-track"><div class="bar-fill cloud" style="width:45.8%"></div><span class="bar-val">77.7</span></div>
+            <div class="bar-meta">TTFT <b>1.0s</b> · Q <b>8.59</b> · <b>$0.93</b></div>
+          </div>
+          <!-- Opus -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">Claude Opus 4.6</div><span class="badge cloud">cloud</span></div>
+            <div class="bar-track"><div class="bar-fill cloud" style="width:45.1%"></div><span class="bar-val">76.6</span></div>
+            <div class="bar-meta">TTFT <b>1.8s</b> · Q <b>8.65</b> · <b>$1.48</b></div>
+          </div>
+          <!-- qwen3-coder -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">qwen3-coder (30B MoE)</div><span class="badge local">local</span></div>
+            <div class="bar-track"><div class="bar-fill local" style="width:28.8%"></div><span class="bar-val">48.8</span></div>
+            <div class="bar-meta">TTFT <b>1.1s</b> · Q <b>7.48</b> · <b>Free</b></div>
+          </div>
+          <!-- qwen2.5-coder -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">qwen2.5-coder:14b</div><span class="badge local">local</span></div>
+            <div class="bar-track"><div class="bar-fill local" style="width:9.2%"></div><span class="bar-val">15.6</span></div>
+            <div class="bar-meta">TTFT <b>1.5s</b> · Q <b>6.64</b> · <b>Free</b></div>
+          </div>
+          <!-- deepseek-r1 -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">deepseek-r1:14b</div><span class="badge local">local</span></div>
+            <div class="bar-track"><div class="bar-fill local" style="width:8.6%"></div><span class="bar-val">14.6</span></div>
+            <div class="bar-meta">TTFT <b>70.2s</b> · Q <b>5.89</b> · <b>Free</b></div>
+          </div>
+          <!-- glm-4.7-flash -->
+          <div class="bar-row" role="listitem">
+            <div class="bar-id"><div class="name">glm-4.7-flash (~9B)</div><span class="badge local">local</span></div>
+            <div class="bar-track"><div class="bar-fill local" style="width:6.0%"></div><span class="bar-val">10.2</span></div>
+            <div class="bar-meta">TTFT <b>54.8s</b> · Q <b>5.30</b> · <b>Free</b></div>
+          </div>
+        </div>
+
+        <p class="caption">Results from one benchmark run on an M2 Max (32GB unified memory). Quality is scored by Claude Sonnet 4.6 out of 10; 62 of the 147 scores are Claude judging Claude, which is flagged in every report rather than hidden and may inflate cloud quality. Cost is the dollar total for the cloud calls in the run; local models cost nothing to run. TTFT is time to first token.</p>
+      </div>
+    </section>
+
+    <!-- WHAT IT MEASURES -->
+    <section class="section" id="measures">
+      <div class="container">
+        <div class="slabel">// what it measures</div>
+        <h2>Three axes, one run</h2>
+        <div class="grid3">
+          <div class="mcard">
+            <div class="ic">01</div>
+            <h3>Speed</h3>
+            <p>Tokens per second for sustained generation, plus time to first token for how quickly a model starts answering.</p>
+            <div class="stat">169.7 tok/s fastest · 0.5s best TTFT</div>
+          </div>
+          <div class="mcard">
+            <div class="ic">02</div>
+            <h3>Quality</h3>
+            <p>Every output is scored by Claude Sonnet 4.6 on correctness (40%), completeness (35%), and clarity (25%).</p>
+            <div class="stat">8.65 / 10 top quality</div>
+          </div>
+          <div class="mcard">
+            <div class="ic">03</div>
+            <h3>Cost</h3>
+            <p>Dollar cost of the cloud calls and the judging pass. Local models running through Ollama are free.</p>
+            <div class="stat">$3.95 total · $2.69 run + $1.26 judge</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how">
+      <div class="container">
+        <div class="slabel">// how it works</div>
+        <h2>Prompt bank to reports, one pipeline</h2>
+        <p class="sub">A Python package (llm_bench) runs the same 21 prompts against every model, hands the outputs to a Claude judge, and generates Word, PowerPoint, web, and dashboard reports.</p>
+        <div class="flow">
+          <div class="flow-step"><div class="n">input</div><div class="t">Prompt bank</div><div class="d">21 YAML prompts, 7 categories</div></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step"><div class="n">runner</div><div class="t">Executor</div><div class="d">runs all models, captures metrics</div></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step"><div class="n">adapters</div><div class="t">Ollama + Anthropic</div><div class="d">4 local, 3 cloud</div></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step"><div class="n">judge</div><div class="t">Claude Sonnet</div><div class="d">weighted quality scoring</div></div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step"><div class="n">output</div><div class="t">Reports</div><div class="d">docx, pptx, web, React dashboard</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROMPT CATEGORIES -->
+    <section class="section" id="categories">
+      <div class="container">
+        <div class="slabel">// prompt categories</div>
+        <h2>Seven categories, three prompts each</h2>
+        <p class="sub">Each model runs all 21 prompts, so 7 models produce 147 tests total.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Category</th><th>File</th><th>What it tests</th></tr></thead>
+            <tbody>
+              <tr><td>Code Generation</td><td><span class="file">code_generation.yaml</span></td><td>Write new code from specifications</td></tr>
+              <tr><td>Debugging &amp; Reasoning</td><td><span class="file">debugging_reasoning.yaml</span></td><td>Find and fix bugs, trace logic</td></tr>
+              <tr><td>Refactoring</td><td><span class="file">refactoring.yaml</span></td><td>Improve existing code structure</td></tr>
+              <tr><td>Explanation &amp; Teaching</td><td><span class="file">explanation_teaching.yaml</span></td><td>Explain concepts clearly</td></tr>
+              <tr><td>Short Quick Tasks</td><td><span class="file">short_quick.yaml</span></td><td>Fast utility operations</td></tr>
+              <tr><td>Long Complex Research</td><td><span class="file">long_complex.yaml</span></td><td>Deep architecture and research tasks</td></tr>
+              <tr><td>Tool Calling / Agentic</td><td><span class="file">tool_calling.yaml</span></td><td>Agentic tool use patterns</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTALL / RUN -->
+    <section class="section" id="run">
+      <div class="container">
+        <div class="slabel">// install and run</div>
+        <h2>Clone it, run your own numbers</h2>
+        <p class="sub">Set ANTHROPIC_API_KEY for the cloud models and start `ollama serve` for the local ones. Then run the benchmark.</p>
+        <div class="codeblock">
+          <div class="cb-bar">
+            <span class="cb-title">bash</span>
+            <button class="copy-btn" data-copy="install">Copy</button>
+          </div>
+          <pre><code id="install"><span class="cm"># Clone</span>
+git clone https://github.com/parsamivehchi/tps.sh.git
+cd tps.sh
+
+<span class="cm"># Install dependencies</span>
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+<span class="cm"># Configure API key (for cloud models)</span>
+echo "ANTHROPIC_API_KEY=sk-ant-..." &gt; .env
+
+<span class="cm"># Start Ollama (for local models)</span>
+ollama serve
+
+<span class="cm"># Run the benchmark</span>
+python -m llm_bench run</code></pre>
+        </div>
+
+        <div class="slabel" style="margin-top:var(--s5)">// requirements</div>
+        <div class="reqs">
+          <span class="req">Python <span class="m">3.12+</span></span>
+          <span class="req">Ollama <span class="m">local models</span></span>
+          <span class="req">Anthropic API key <span class="m">cloud models</span></span>
+          <span class="req">Apple Silicon <span class="m">M2 Max 32GB used</span></span>
+          <span class="req">Node / Bun <span class="m">optional, dashboard</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- OUTBOUND CTA -->
+    <section class="section" id="live">
+      <div class="container">
+        <div class="cta">
+          <div class="ct">
+            <h3>See the full interactive results</h3>
+            <p>Charts, per-category breakdowns, and the hardware guide live at the interactive site.</p>
+          </div>
+          <a class="btn" href="https://tps.sh">Open tps.sh &nearr;</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- LICENSE -->
+    <section class="section" id="license">
+      <div class="container">
+        <div class="license">
+          <div class="lk">// license</div>
+          <h3>PolyForm Noncommercial 1.0.0</h3>
+          <p>Free for personal and non-commercial use. See the <a href="https://github.com/parsamivehchi/tps.sh/blob/main/LICENSE">full license</a> for the exact terms. Licensor: Parsa Mivehchi.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="frow">
+        <div class="fl">PolyForm Noncommercial 1.0.0. Using this commercially? <a href="https://mivehchi.app/contact">Get in touch.</a></div>
+        <div class="fl"><a href="https://github.com/parsamivehchi/tps.sh">github.com/parsamivehchi/tps.sh</a></div>
+      </div>
+      <div class="fmeta">Built by <a href="https://mivehchi.app">Parsa Mivehchi</a></div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('themeToggle');
+      function current() {
+        var set = root.getAttribute('data-theme');
+        if (set) return set;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      btn.addEventListener('click', function () {
+        var next = current() === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('mv.theme', next); } catch (e) {}
+      });
+      // Copy buttons
+      document.querySelectorAll('.copy-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var el = document.getElementById(b.getAttribute('data-copy'));
+          if (!el) return;
+          navigator.clipboard.writeText(el.innerText).then(function () {
+            var old = b.textContent;
+            b.textContent = 'Copied'; b.classList.add('copied');
+            setTimeout(function () { b.textContent = old; b.classList.remove('copied'); }, 1600);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
