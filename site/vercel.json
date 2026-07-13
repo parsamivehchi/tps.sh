@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "header", "key": "x-forwarded-host", "value": "tps-sh-site.vercel.app" }],
+      "destination": "https://mivehchi.app/tps",
+      "permanent": false
+    }
+  ]
+}
