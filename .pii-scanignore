@@ -1,0 +1,4 @@
+# pii-scan: shape-class exclusions (denylist still applies). Benchmark corpus = raw LLM outputs
+# that legitimately contain example emails and IP addresses used to test regex validators.
+^dashboard/public/data/dashboard_data\.json$
+^llm_bench/prompts/bank/

@@ -96,7 +96,7 @@ for k, v in MODEL_DATA.items():
     if v["tps_std"] is None:
         v["tps_std"] = (v["tps_max"] - v["tps_min"]) / 4  # rough estimate
 
-OUTPUT_DIR = Path("/Users/parsamivehchi/Desktop/DEV/LLM-BENCH/reports")
+OUTPUT_DIR = Path(__file__).resolve().parent / "reports"
 OUTPUT_FILE = OUTPUT_DIR / "model_comparison_20260226.pptx"
 CHART_DIR = Path(tempfile.mkdtemp(prefix="llmbench_charts_"))
 
